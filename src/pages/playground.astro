@@ -2,10 +2,11 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import profile from '../data/profile.json';
-import { getExperience, getProjects, getPosts, getEducation, getRepos } from '../lib';
+import { getExperience, getProjects, getPosts, getEducation, getRepos, getSideQuests } from '../lib';
 
 const githubUser = profile.github.split('/').filter(Boolean).pop()!;
 const [experience, projects, posts, education, repos] = await Promise.all([getExperience(), getProjects(), getPosts(), getEducation(), getRepos(githubUser)]);
+const sideQuests = await getSideQuests();
 const iso = (d?: Date) => (d ? d.toISOString().slice(0, 10) : null);
 
 // Every table maps to the page that shows it. Columns -> rows, all plain values.
@@ -14,6 +15,8 @@ const tables: Record<string, { page: string; cols: string[]; rows: (string | num
     rows: [[profile.name, profile.title, profile.location, profile.email, profile.github, profile.linkedin]] },
   projects: { page: '/projects', cols: ['id', 'title', 'tags', 'repo', 'summary'],
     rows: projects.map((p, i) => [i + 1, p.data.title, p.data.tags.join(', '), p.data.repo ?? null, p.data.summary]) },
+  side_quests: { page: '/projects#side-quests', cols: ['title', 'language', 'relationship_status', 'repo'],
+    rows: sideQuests.map((q) => [q.data.title, q.data.language, q.data.status, q.data.repo ?? null]) },
   github_repos: { page: '/projects', cols: ['name', 'language', 'stars', 'forks', 'pushed_at', 'description', 'url'],
     rows: repos.map((r) => [r.name, r.language, r.stargazers_count, r.forks_count, r.pushed_at.slice(0, 10), r.description, r.html_url]) },
   experience: { page: '/experience', cols: ['id', 'role', 'company', 'location', 'start_date', 'end_date', 'stack'],
@@ -148,6 +151,7 @@ const examples = [
     hobbies: 'Hobbies are a protected resource.',
     blog: "Posts are forever. That's what the internet is for.",
     github_repos: 'Those live on GitHub. Open a pull request instead.',
+    side_quests: "Side quests can't be deleted. They're how I leveled up.",
     partner: 'Applications for this table go through the INSERT INTO partner button on /partner.',
   };
   function guard(sql: string) {

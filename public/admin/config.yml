@@ -44,6 +44,21 @@ collections:
       - { name: snippet, label: Code snippet, widget: text, required: false }
       - { name: snippet_lang, label: Snippet language, widget: select, options: [csharp, typescript, javascript, sql, python, json, bash, text], default: csharp, required: false }
 
+  - name: sidequests
+    label: Side quests
+    label_singular: Side quest
+    folder: src/content/sidequests
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}} ({{language}})"
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: language, label: Language, widget: string }
+      - { name: status, label: "Relationship status with this language", widget: string, hint: "e.g. It's complicated." }
+      - { name: summary, label: Summary, widget: text }
+      - { name: repo, label: Source code URL, widget: string, required: false }
+      - { name: order, label: Order (1 shows first), widget: number, value_type: int, default: 10 }
+
   - name: experience
     label: Experience
     label_singular: Job

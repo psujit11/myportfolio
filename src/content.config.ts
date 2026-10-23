@@ -32,6 +32,17 @@ export const collections = {
       order: z.number().default(99),
     }),
   }),
+  sidequests: defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/sidequests' }),
+    schema: z.object({
+      title: z.string(),
+      language: z.string(),
+      status: z.string(),
+      summary: z.string(),
+      repo: z.string().optional(),
+      order: z.number().default(99),
+    }),
+  }),
   experience: defineCollection({
     loader: glob({ pattern: '**/*.md', base: './src/content/experience' }),
     schema: z.object({

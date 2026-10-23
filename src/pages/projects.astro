@@ -2,17 +2,19 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import profile from '../data/profile.json';
-import { getProjects } from '../lib';
+import { getProjects, getSideQuests } from '../lib';
 import { Code } from 'astro:components';
 
-const projects = await getProjects();
+const [projects, sideQuests] = await Promise.all([getProjects(), getSideQuests()]);
+// One group per language; the first entry's status speaks for the language.
+const groups = [...Map.groupBy(sideQuests, (q) => q.data.language)].map(([language, items]) => ({ language, status: items[0].data.status, items }));
 ---
-<Base title="Projects" description="Projects by Sujit Sharma Poudel: .NET APIs, web apps and ML experiments.">
+<Base title="Projects" description="Projects by Sujit Sharma Poudel: .NET APIs, a multi-tenant SaaS, web apps and side quests in other languages.">
   <div class="wrap">
     <header class="page-head">
       <span class="ident">SELECT * FROM projects;</span>
       <h1>Projects</h1>
-      <p class="lede">Things I've built: a multi-tenant SaaS, .NET APIs and web apps, and an ML experiment from university.</p>
+      <p class="lede">Things I've built: a multi-tenant SaaS, .NET APIs and web apps, a PHP system and an ML experiment from university.</p>
     </header>
 
     <div class="bento">
@@ -43,6 +45,30 @@ const projects = await getProjects();
         <p>Experiments, practice repos and work in progress.</p>
       </a>
     </div>
+
+    {groups.length > 0 && (
+      <section class="section quests" id="side-quests">
+        <div class="section-title"><h2>Side quests</h2></div>
+        <p class="quests-intro">I write C# for a living. That doesn't mean I can't write anything else. It means I chose to. Here's the proof, plus small experiments that never grew into full projects. (PHP? It's complicated. See Online Marriage Registration above.)</p>
+        {groups.map((g) => (
+          <article class="quest-group">
+            <header>
+              <h3>{g.language}</h3>
+              <p class="ident muted">relationship_status</p>
+              <p class="status">{g.status}</p>
+            </header>
+            <ul>
+              {g.items.map((q) => (
+                <li>
+                  {q.data.repo ? <a href={q.data.repo} target="_blank" rel="noopener">{q.data.title}</a> : <span class="q-title">{q.data.title}</span>}
+                  <p>{q.data.summary}</p>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </section>
+    )}
   </div>
 </Base>
 
@@ -73,6 +99,18 @@ const projects = await getProjects();
   .more:hover { border-color: var(--blue); color: var(--blue); }
   .private { display: inline-flex; gap: 6px; align-items: center; color: var(--slate); }
   .featured .private { color: var(--term-dim); }
+  .quests { scroll-margin-top: 80px; }
+  .quests-intro { color: var(--slate); max-width: 68ch; margin: -8px 0 12px; }
+  .quest-group { display: grid; grid-template-columns: 240px 1fr; gap: 28px; padding: 26px 0; border-top: 1px solid var(--line); }
+  .quest-group:first-of-type { border-top: 0; }
+  .quest-group h3 { font: 600 1.15rem/1.3 var(--mono); }
+  .quest-group header .ident { margin-top: 10px; }
+  .status { font-style: italic; color: var(--love); margin-top: 2px; }
+  .quest-group ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px 28px; }
+  .quest-group li a, .q-title { font-weight: 600; text-decoration: none; color: var(--ink); }
+  .quest-group li a:hover { color: var(--blue); text-decoration: underline; }
+  .quest-group li p { color: var(--slate); font-size: 0.93rem; margin-top: 4px; }
+  @media (max-width: 700px) { .quest-group { grid-template-columns: 1fr; gap: 14px; } }
   .more h2 { font-size: 1.4rem; }
   .more p { color: var(--slate); }
 </style>

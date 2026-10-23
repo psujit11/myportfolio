@@ -11,6 +11,7 @@ const newestFirst = <T extends { data: { start: Date; end?: Date } }>(a: T, b: T
 
 export const getExperience = async () => (await getCollection('experience')).sort(newestFirst);
 export const getEducation = async () => (await getCollection('education')).sort(newestFirst);
+export const getSideQuests = async () => (await getCollection('sidequests')).sort((a, b) => a.data.order - b.data.order);
 export const getProjects = async () => (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 // Public repos, fetched once per build. A failed fetch (rate limit, offline) gives an empty table, not a broken build.
 // Set GITHUB_TOKEN on Netlify to avoid the 60 requests/hour anonymous limit on shared build machines.
