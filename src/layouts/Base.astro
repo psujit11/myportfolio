@@ -15,6 +15,14 @@ const nav = [
 ];
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
 const onPlayground = path === '/playground';
+// mailto alone fails for visitors with no mail app set up, so the email menu offers webmail and copy too.
+const to = encodeURIComponent(profile.email);
+const subject = encodeURIComponent(`Hi ${profile.short_name}`);
+const mail = {
+  app: `mailto:${profile.email}?subject=${subject}`,
+  gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}`,
+  outlook: `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}`,
+};
 ---
 <!doctype html>
 <html lang="en" data-mode="unset">
@@ -58,7 +66,7 @@ const onPlayground = path === '/playground';
         </button>
         <a href={profile.github} aria-label="GitHub" target="_blank" rel="noopener"><Icon name="github" /></a>
         <a href={profile.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin" /></a>
-        <a href={`mailto:${profile.email}`} aria-label={`Email ${profile.email}`}><Icon name="mail" /></a>
+        <button type="button" class="icon-btn" popovertarget="mail-menu" aria-label={`Email ${profile.email}`}><Icon name="mail" /></button>
         <a class="btn resume" href={profile.resume} download><Icon name="download" size={16} /> Resume</a>
       </div>
     </div>
@@ -79,15 +87,34 @@ const onPlayground = path === '/playground';
     <div class="wrap foot-in">
       <span>© {new Date().getFullYear()} {profile.name}. Built with Astro, queried with SQLite.</span>
       <div class="link-row">
-        <a href={`mailto:${profile.email}`}>email</a>
+        <button type="button" class="link-btn" popovertarget="mail-menu">email</button>
         <a href={profile.github} target="_blank" rel="noopener">github</a>
         <a href={profile.linkedin} target="_blank" rel="noopener">linkedin</a>
-        <button type="button" class="switch-mode" data-switch-mode>change mode</button>
+        <button type="button" class="link-btn" data-switch-mode>change mode</button>
       </div>
     </div>
   </footer>
 
+  <div id="mail-menu" popover class="mail-menu">
+    <p class="mail-addr">{profile.email}</p>
+    <a href={mail.app}><Icon name="mail" size={16} /> Open mail app</a>
+    <a href={mail.gmail} target="_blank" rel="noopener">Gmail</a>
+    <a href={mail.outlook} target="_blank" rel="noopener">Outlook</a>
+    <button type="button" data-copy-email={profile.email}>Copy address</button>
+  </div>
+
   <script>
+    const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy-email]')!;
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(copyBtn.dataset.copyEmail!);
+        copyBtn.textContent = 'Copied';
+      } catch {
+        copyBtn.textContent = 'Copy failed. Select the address above.';
+      }
+      setTimeout(() => (copyBtn.textContent = 'Copy address'), 2000);
+    });
+
     const root = document.documentElement;
     const themeBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
     const setTheme = (t: string) => { root.dataset.theme = t; themeBtn.setAttribute('aria-pressed', String(t === 'dark')); };
@@ -124,8 +151,9 @@ const onPlayground = path === '/playground';
   nav a.active { color: var(--blue); border-color: var(--blue); }
   .admin-link { color: var(--green) !important; }
   .top-icons { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-  .top-icons > a:not(.btn) { color: var(--slate); display: grid; place-items: center; }
-  .top-icons > a:not(.btn):hover { color: var(--blue); }
+  .top-icons > a:not(.btn), .icon-btn { color: var(--slate); display: grid; place-items: center; }
+  .top-icons > a:not(.btn):hover, .icon-btn:hover { color: var(--blue); }
+  .icon-btn { background: none; border: 0; padding: 0; cursor: pointer; }
   .resume { padding: 9px 14px; font-size: 0.88rem; }
   .theme-btn { background: none; border: 0; padding: 0; color: var(--slate); cursor: pointer; display: grid; place-items: center; }
   .theme-btn:hover { color: var(--blue); }
@@ -145,6 +173,12 @@ const onPlayground = path === '/playground';
 
   .foot { border-top: 1px solid var(--line); background: var(--card); margin-top: 48px; }
   .foot-in { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 28px; padding-bottom: 28px; font: 0.8rem/1.5 var(--mono); color: var(--slate); }
-  .switch-mode { background: none; border: 0; padding: 0; color: var(--blue); font: inherit; cursor: pointer; }
-  .switch-mode:hover { text-decoration: underline; }
+  .link-btn { background: none; border: 0; padding: 0; color: var(--blue); font: inherit; cursor: pointer; }
+  .link-btn:hover { text-decoration: underline; }
+
+  .mail-menu { width: min(340px, calc(100vw - 32px)); padding: 8px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); color: var(--ink); box-shadow: 0 24px 48px -20px var(--shadow); }
+  .mail-menu::backdrop { background: rgba(11, 18, 32, 0.35); }
+  .mail-addr { font: 500 0.85rem/1.4 var(--mono); color: var(--slate); padding: 10px 12px 8px; user-select: all; overflow-wrap: anywhere; }
+  .mail-menu a, .mail-menu button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; border: 0; border-radius: var(--r); background: none; color: var(--ink); font: 0.95rem var(--sans); text-decoration: none; text-align: left; cursor: pointer; }
+  .mail-menu a:hover, .mail-menu button:hover { background: var(--blue-soft); color: var(--blue); }
 </style>
