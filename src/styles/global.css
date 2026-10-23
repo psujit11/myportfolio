@@ -1,0 +1,128 @@
+:root {
+  --paper: #f5f7fb;
+  --card: #ffffff;
+  --ink: #0e1a2b;
+  --slate: #5b6b82;
+  --line: #dce3ee;
+  --blue: #1f4fd1;
+  --blue-soft: #e8eefc;
+  --green: #12805c;
+  --red: #c2384b;
+  --term: #0b1526;
+  --term-line: #1e2b42;
+  --term-text: #c9d4e5;
+  --term-dim: #6e7f99;
+  --term-edge: #0b1526;
+  --dot: #d3dbe8;
+  --chip-grey: #eef1f6;
+  --blue-hover: #1a43b3;
+  --on-blue: #ffffff;
+  --th: #eef2f8;
+  --quiz-line: #cdd9f7;
+  --ok-bg: #e6f5ee;
+  --ok-text: #0b5e43;
+  --bad-bg: #fbeaec;
+  --bad-text: #8f2232;
+  --shadow: rgba(11, 21, 38, 0.45);
+  color-scheme: light;
+
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 14px;
+  --wrap: 1120px;
+}
+
+/* Theme is resolved (saved choice, else system) by the inline script in Base.astro */
+:root[data-theme='dark'] {
+  --paper: #0b1220;
+  --card: #111a2b;
+  --ink: #e4eaf4;
+  --slate: #93a3bb;
+  --line: #23304a;
+  --blue: #7c9cff;
+  --blue-soft: #18264a;
+  --green: #4cc99a;
+  --red: #f07589;
+  --term: #060b16;
+  --term-edge: #23304a;
+  --dot: #1c2740;
+  --chip-grey: #1a2438;
+  --blue-hover: #9bb3ff;
+  --on-blue: #0b1220;
+  --th: #162034;
+  --quiz-line: #263a6b;
+  --ok-bg: #0f2e24;
+  --ok-text: #7fe0b5;
+  --bad-bg: #3a1620;
+  --bad-text: #ff9fae;
+  --shadow: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font: 400 1rem/1.6 var(--sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+img { max-width: 100%; display: block; }
+a { color: var(--blue); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+code, pre, kbd { font-family: var(--mono); }
+h1, h2, h3 { line-height: 1.15; margin: 0; letter-spacing: -0.015em; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 600; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0; }
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+@media (max-width: 600px) { .wrap { padding: 0 16px; } }
+
+/* SQL-identifier label: the one recurring "label" device on the site */
+.ident { font: 500 0.78rem/1.4 var(--mono); color: var(--blue); }
+.ident.muted { color: var(--slate); }
+
+.lede { color: var(--slate); font-size: 1.1rem; max-width: 62ch; margin-top: 14px; }
+.page-head { padding: 64px 0 40px; }
+.page-head .ident { display: block; margin-bottom: 10px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; }
+.term { border: 1px solid var(--term-edge); background: var(--term); color: var(--term-text); border-radius: var(--r); padding: 18px 20px; font: 0.9rem/1.7 var(--mono); overflow-x: auto; }
+
+.chip { display: inline-block; font: 500 0.75rem/1 var(--mono); padding: 6px 8px; border-radius: var(--r-sm); background: var(--blue-soft); color: var(--blue); }
+.chip.grey { background: var(--chip-grey); color: var(--slate); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 500 0.95rem/1 var(--sans); padding: 12px 18px; border-radius: var(--r); border: 1px solid var(--blue); background: var(--blue); color: var(--on-blue); text-decoration: none; cursor: pointer; }
+.btn:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+.btn.ghost { background: transparent; color: var(--blue); }
+.btn.ghost:hover { background: var(--blue-soft); }
+
+.link-row { display: flex; gap: 20px; flex-wrap: wrap; font: 500 0.85rem/1 var(--mono); }
+.link-row a { text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.link-row a:hover { text-decoration: underline; }
+
+.section { padding: 56px 0; }
+.section-title { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+/* Mode gating. data-mode is set before paint in Base.astro */
+html[data-mode='techie'] .hide-techie { display: none !important; }
+html:not([data-mode='techie']) .only-techie { display: none !important; }
+html:not([data-mode='owner']) .only-owner { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

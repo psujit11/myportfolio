@@ -1,0 +1,150 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import profile from '../data/profile.json';
+
+interface Props { title?: string; description?: string }
+const { title, description = profile.intro } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/playground', label: 'playground', keep: true },
+  { href: '/projects', label: 'projects' },
+  { href: '/experience', label: 'experience' },
+  { href: '/about', label: 'about' },
+  { href: '/blog', label: 'blog' },
+];
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+const onPlayground = path === '/playground';
+---
+<!doctype html>
+<html lang="en" data-mode="unset">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title ? `${title} | ${profile.short_name}.db` : `${profile.name}, ${profile.title}`}</title>
+  <meta name="description" content={description} />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script is:inline>
+    // Modes: unset | techie | human | owner. Owner = localStorage.owner === 'true' (or visit /?owner=1).
+    var d = document.documentElement, dark = matchMedia('(prefers-color-scheme: dark)'), saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    d.dataset.theme = saved || (dark.matches ? 'dark' : 'light');
+    try {
+      var s = localStorage, q = new URLSearchParams(location.search).get('owner');
+      if (q === '1') s.setItem('owner', 'true');
+      if (q === '0') s.removeItem('owner');
+      document.documentElement.dataset.mode = s.getItem('owner') === 'true' ? 'owner' : (s.getItem('visitor') || 'unset');
+    } catch (e) {}
+  </script>
+  <noscript><style>html .hide-techie, html .gated { display: revert !important; }</style></noscript>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="top">
+    <div class="wrap top-in">
+      <a class="brand" href="/">{profile.short_name.toLowerCase()}<span>.db</span></a>
+      <nav aria-label="Main">
+        {nav.map((n) => (
+          <a href={n.href} class:list={[{ active: isActive(n.href) }, !n.keep && 'hide-techie']} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}</a>
+        ))}
+        <a href="/admin/" class="only-owner admin-link">/admin</a>
+      </nav>
+      <div class="top-icons">
+        <button type="button" class="theme-btn" data-theme-toggle aria-label="Dark mode">
+          <span class="i-moon"><Icon name="moon" /></span><span class="i-sun"><Icon name="sun" /></span>
+        </button>
+        <a href={profile.github} aria-label="GitHub" target="_blank" rel="noopener"><Icon name="github" /></a>
+        <a href={profile.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin" /></a>
+        <a href={`mailto:${profile.email}`} aria-label={`Email ${profile.email}`}><Icon name="mail" /></a>
+        <a class="btn resume" href={profile.resume} download><Icon name="download" size={16} /> Resume</a>
+      </div>
+    </div>
+  </header>
+
+  {!onPlayground && path !== '/' && (
+    <div class="only-techie techie-bar">
+      <div class="wrap">
+        <span>Query mode is on. Navigation runs through the playground.</span>
+        <a href="/playground">Back to the playground</a>
+      </div>
+    </div>
+  )}
+
+  <main id="main"><slot /></main>
+
+  <footer class="foot">
+    <div class="wrap foot-in">
+      <span>© {new Date().getFullYear()} {profile.name}. Built with Astro, queried with SQLite.</span>
+      <div class="link-row">
+        <a href={`mailto:${profile.email}`}>email</a>
+        <a href={profile.github} target="_blank" rel="noopener">github</a>
+        <a href={profile.linkedin} target="_blank" rel="noopener">linkedin</a>
+        <button type="button" class="switch-mode" data-switch-mode>change mode</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const root = document.documentElement;
+    const themeBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!;
+    const setTheme = (t: string) => { root.dataset.theme = t; themeBtn.setAttribute('aria-pressed', String(t === 'dark')); };
+    setTheme(root.dataset.theme!);
+    themeBtn.addEventListener('click', () => {
+      const t = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      setTheme(t);
+      try { localStorage.setItem('theme', t); } catch {}
+    });
+    // Follow the OS setting until the visitor picks one.
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      let saved = null;
+      try { saved = localStorage.getItem('theme'); } catch {}
+      if (!saved) setTheme(e.matches ? 'dark' : 'light');
+    });
+    document.querySelector('[data-switch-mode]')?.addEventListener('click', () => {
+      try { localStorage.removeItem('visitor'); } catch {}
+      location.href = '/';
+    });
+  </script>
+</body>
+</html>
+
+<style>
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: #fff; padding: 8px 12px; z-index: 10; }
+  .skip:focus { left: 8px; }
+  .top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .top-in { display: flex; align-items: center; gap: 32px; height: 64px; }
+  .brand { font: 600 1.1rem/1 var(--mono); color: var(--ink); text-decoration: none; }
+  .brand span { color: var(--blue); }
+  nav { display: flex; gap: 22px; font: 400 0.92rem/1 var(--mono); }
+  nav a { color: var(--slate); text-decoration: none; padding: 22px 0 20px; border-bottom: 2px solid transparent; }
+  nav a:hover { color: var(--ink); }
+  nav a.active { color: var(--blue); border-color: var(--blue); }
+  .admin-link { color: var(--green) !important; }
+  .top-icons { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .top-icons > a:not(.btn) { color: var(--slate); display: grid; place-items: center; }
+  .top-icons > a:not(.btn):hover { color: var(--blue); }
+  .resume { padding: 9px 14px; font-size: 0.88rem; }
+  .theme-btn { background: none; border: 0; padding: 0; color: var(--slate); cursor: pointer; display: grid; place-items: center; }
+  .theme-btn:hover { color: var(--blue); }
+  .theme-btn span { display: grid; }
+  :global(html[data-theme='dark']) .i-moon, :global(html[data-theme='light']) .i-sun { display: none; }
+
+  @media (max-width: 860px) {
+    .top-in { flex-wrap: wrap; height: auto; padding-top: 12px; gap: 8px 20px; }
+    nav { order: 3; width: 100%; overflow-x: auto; gap: 18px; }
+    nav a { padding: 10px 0; }
+  }
+  @media (max-width: 420px) { .top-icons > a[aria-label='LinkedIn'] { display: none; } }
+
+  .techie-bar { background: var(--term); color: var(--term-text); font: 0.85rem/1.4 var(--mono); }
+  .techie-bar .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .techie-bar a { color: #8fb0ff; }
+
+  .foot { border-top: 1px solid var(--line); background: var(--card); margin-top: 48px; }
+  .foot-in { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 28px; padding-bottom: 28px; font: 0.8rem/1.5 var(--mono); color: var(--slate); }
+  .switch-mode { background: none; border: 0; padding: 0; color: var(--blue); font: inherit; cursor: pointer; }
+  .switch-mode:hover { text-decoration: underline; }
+</style>

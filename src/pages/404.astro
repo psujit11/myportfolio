@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Not found">
+  <div class="wrap">
+    <section class="page-head">
+      <pre class="term err"><span class="dim">sujit=#</span> SELECT * FROM <span id="rel">this_page</span>;
+ERROR:  relation "<span id="rel2">this_page</span>" does not exist
+<span class="dim">HINT:  Try one of: projects, experience, about, blog.</span></pre>
+      <h1>This page doesn't exist</h1>
+      <p class="lede">The link may be old, or there's a typo in the address.</p>
+      <div class="actions">
+        <a class="btn" href="/playground">Open the playground</a>
+        <a class="btn ghost hide-techie" href="/">Go home</a>
+      </div>
+    </section>
+  </div>
+</Base>
+<script>
+  const name = location.pathname.replace(/^\/|\/$/g, '').replace(/\W+/g, '_') || 'this_page';
+  ['rel', 'rel2'].forEach((id) => (document.getElementById(id)!.textContent = name));
+</script>
+<style>
+  .err { margin-bottom: 32px; max-width: 640px; }
+  .dim { color: var(--term-dim); }
+  .actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+</style>

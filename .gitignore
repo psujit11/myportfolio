@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.netlify/
+.playwright-mcp/
+.claude-profile
+design image/
+/suzit-Poudel-cv*.pdf
+*.stackdump

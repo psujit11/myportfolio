@@ -1,0 +1,263 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import profile from '../data/profile.json';
+import { getExperience, getProjects, getPosts, getEducation } from '../lib';
+
+const [experience, projects, posts, education] = await Promise.all([getExperience(), getProjects(), getPosts(), getEducation()]);
+const iso = (d?: Date) => (d ? d.toISOString().slice(0, 10) : null);
+
+// Every table maps to the page that shows it. Columns -> rows, all plain values.
+const tables: Record<string, { page: string; cols: string[]; rows: (string | number | null)[][] }> = {
+  me: { page: '/about', cols: ['name', 'title', 'location', 'email', 'github', 'linkedin'],
+    rows: [[profile.name, profile.title, profile.location, profile.email, profile.github, profile.linkedin]] },
+  projects: { page: '/projects', cols: ['id', 'title', 'tags', 'repo', 'summary'],
+    rows: projects.map((p, i) => [i + 1, p.data.title, p.data.tags.join(', '), p.data.repo ?? null, p.data.summary]) },
+  experience: { page: '/experience', cols: ['id', 'role', 'company', 'location', 'start_date', 'end_date', 'stack'],
+    rows: experience.map((e, i) => [i + 1, e.data.role, e.data.company, e.data.location, iso(e.data.start), iso(e.data.end), e.data.stack.join(', ')]) },
+  education: { page: '/experience#education', cols: ['id', 'degree', 'school', 'start_date', 'end_date', 'score'],
+    rows: education.map((e, i) => [i + 1, e.data.degree, e.data.school, iso(e.data.start), iso(e.data.end), e.data.score ?? null]) },
+  skills: { page: '/experience#skills', cols: ['name', 'category'],
+    rows: profile.skill_groups.flatMap((g) => g.items.map((s) => [s, g.group])) },
+  certifications: { page: '/experience#certifications', cols: ['title', 'issuer', 'year'],
+    rows: profile.certifications.map((c) => [c.title, c.issuer, c.year]) },
+  hobbies: { page: '/about', cols: ['title', 'tag', 'text'],
+    rows: profile.hobbies.map((h) => [h.title, h.tag, h.text]) },
+  blog: { page: '/blog', cols: ['slug', 'title', 'published', 'tags'],
+    rows: posts.map((p) => [p.id, p.data.title, iso(p.data.date), p.data.tags.join(', ')]) },
+};
+
+const examples = [
+  'SELECT company, role, start_date FROM experience ORDER BY start_date DESC;',
+  'SELECT category, COUNT(*) AS skills FROM skills GROUP BY category;',
+  "SELECT title, repo FROM projects WHERE tags LIKE '%ASP.NET%';",
+  "SELECT name FROM sqlite_master WHERE type = 'table';",
+];
+---
+<Base title="Playground" description="Query my portfolio with real SQL, right in your browser.">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="ident">sqlite 3 · in-browser · read it, break it, refresh it</span>
+      <h1>Playground</h1>
+      <p class="lede">Every page on this site is a table. Drag one into the query (or tap it) to run it and open that page. Or switch to free mode and write your own SQL.</p>
+    </header>
+
+    <div class="pg">
+      <aside class="card schema" aria-label="Tables">
+        <p class="ident muted">schema: public</p>
+        <ul>
+          {Object.entries(tables).map(([name, t]) => (
+            <li>
+              <button class="tbl" draggable="true" data-table={name} title={`Query ${name}`}>
+                <Icon name="table" size={16} /><span>{name}</span><small>{t.rows.length}</small>
+              </button>
+              <p class="cols">{t.cols.join(', ')}</p>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <section class="ed">
+        <div class="ed-box">
+          <div class="ed-bar">
+            <span>query.sql</span>
+            <div class="tabs" role="group" aria-label="Editor mode">
+              <button data-mode-btn="build" aria-pressed="true">drag &amp; drop</button>
+              <button data-mode-btn="free" aria-pressed="false">free sql</button>
+            </div>
+          </div>
+
+          <div class="build" data-pane="build">
+            <span class="kw">SELECT</span> * <span class="kw">FROM</span>
+            <span class="drop" data-drop tabindex="-1">drop a table here</span>;
+          </div>
+          <div class="free" data-pane="free" hidden>
+            <label class="sr" for="sql">SQL query</label>
+            <textarea id="sql" spellcheck="false" rows="5">{examples[0]}</textarea>
+          </div>
+
+          <div class="ed-actions">
+            <button class="btn" data-run><Icon name="play" size={14} /> Run</button>
+            <span class="hint" data-pane="free" hidden><kbd>Ctrl</kbd> + <kbd>Enter</kbd> runs it</span>
+          </div>
+        </div>
+
+        <div class="examples" data-pane="free" hidden>
+          <p class="ident muted">try one</p>
+          {examples.map((q) => <button class="ex" data-example={q}>{q}</button>)}
+        </div>
+
+        <div class="out" aria-live="polite">
+          <p class="status" data-status>Loading SQLite…</p>
+          <div class="grid-wrap" data-grid></div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script type="application/json" id="seed" set:html={JSON.stringify(tables).replace(/</g, '\\u003c')} />
+</Base>
+
+<script>
+  import initSqlJs, { type Database } from 'sql.js';
+  import wasmUrl from 'sql.js/dist/sql-wasm-browser.wasm?url';
+
+  type Seed = Record<string, { page: string; cols: string[]; rows: unknown[][] }>;
+  const seed: Seed = JSON.parse(document.getElementById('seed')!.textContent!);
+  const $ = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+  const statusEl = $<HTMLElement>('[data-status]');
+  const gridEl = $<HTMLElement>('[data-grid]');
+  const dropEl = $<HTMLElement>('[data-drop]');
+  const sqlEl = $<HTMLTextAreaElement>('#sql');
+  let mode: 'build' | 'free' = 'build';
+  let picked = '';
+  let timer = 0;
+
+  const status = (html: string, kind = '') => { statusEl.className = 'status ' + kind; statusEl.innerHTML = html; };
+  const esc = (s: unknown) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  // Build the in-memory database from the page's own content.
+  const dbReady: Promise<Database> = initSqlJs({ locateFile: () => wasmUrl }).then((SQL) => {
+    const db = new SQL.Database();
+    for (const [name, t] of Object.entries(seed)) {
+      db.run(`CREATE TABLE ${name} (${t.cols.join(', ')})`);
+      const ins = db.prepare(`INSERT INTO ${name} VALUES (${t.cols.map(() => '?').join(', ')})`);
+      t.rows.forEach((r) => ins.run(r as any));
+      ins.free();
+    }
+    status('Ready. Pick a table on the left.');
+    return db;
+  }).catch((e) => { status(`Couldn't start SQLite: ${esc(e.message)}`, 'err'); throw e; });
+
+  function render(cols: string[], rows: unknown[][]) {
+    const head = cols.map((c) => `<th>${esc(c)}</th>`).join('');
+    const body = rows.slice(0, 200).map((r) => `<tr>${r.map((v) => `<td>${v === null ? '<i>null</i>' : esc(v)}</td>`).join('')}</tr>`).join('');
+    gridEl.innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+  }
+
+  async function run() {
+    clearTimeout(timer);
+    const db = await dbReady;
+    const sql = mode === 'build' ? (picked && `SELECT * FROM ${picked};`) : sqlEl.value.trim();
+    if (!sql) return status('Drop a table into the query first.', 'err');
+    const t0 = performance.now();
+    try {
+      const res = db.exec(sql);
+      const ms = (performance.now() - t0).toFixed(1);
+      const last = res[res.length - 1];
+      last ? render(last.columns, last.values) : (gridEl.innerHTML = '');
+      const n = last?.values.length ?? 0;
+      const summary = `${n} ${n === 1 ? 'row' : 'rows'} in ${ms} ms.`;
+      const table = sql.match(/\bfrom\s+["`[]?(\w+)/i)?.[1]?.toLowerCase() ?? '';
+      const page = seed[table]?.page;
+      if (mode === 'build' && page) {
+        let left = 3;
+        const tick = () => {
+          if (left === 0) return void (location.href = page);
+          status(`${summary} Opening <a href="${page}">${page}</a> in ${left}… <button class="stay" data-stay>Stay here</button>`, 'ok');
+          left--; timer = window.setTimeout(tick, 1000);
+        };
+        tick();
+      } else {
+        status(summary + (page ? ` <a href="${page}">Open ${page}</a>` : ''), 'ok');
+      }
+    } catch (e: any) {
+      gridEl.innerHTML = '';
+      status(`ERROR: ${esc(e.message)}`, 'err');
+    }
+  }
+
+  function pick(name: string) {
+    if (mode === 'free') {
+      sqlEl.setRangeText(name, sqlEl.selectionStart, sqlEl.selectionEnd, 'end');
+      return sqlEl.focus();
+    }
+    picked = name;
+    dropEl.textContent = name;
+    dropEl.classList.add('filled');
+    run();
+  }
+
+  function setMode(m: typeof mode) {
+    mode = m;
+    clearTimeout(timer);
+    document.querySelectorAll<HTMLElement>('[data-pane]').forEach((p) => (p.hidden = p.dataset.pane !== m));
+    document.querySelectorAll<HTMLButtonElement>('[data-mode-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modeBtn === m)));
+    if (m === 'free') sqlEl.focus();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.tbl').forEach((b) => {
+    b.addEventListener('click', () => pick(b.dataset.table!));
+    b.addEventListener('dragstart', (e) => e.dataTransfer!.setData('text/plain', b.dataset.table!));
+  });
+  dropEl.addEventListener('dragover', (e) => { e.preventDefault(); dropEl.classList.add('over'); });
+  dropEl.addEventListener('dragleave', () => dropEl.classList.remove('over'));
+  dropEl.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropEl.classList.remove('over');
+    const name = e.dataTransfer!.getData('text/plain');
+    if (seed[name]) pick(name);
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-mode-btn]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.modeBtn as typeof mode)));
+  document.querySelectorAll<HTMLButtonElement>('[data-example]').forEach((b) => b.addEventListener('click', () => { sqlEl.value = b.dataset.example!; run(); }));
+  $('[data-run]').addEventListener('click', run);
+  sqlEl.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); } });
+  statusEl.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).matches('[data-stay]')) { clearTimeout(timer); status('Staying here. Pick another table, or switch to free sql.'); }
+  });
+</script>
+
+<style>
+  .pg { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .pg { grid-template-columns: 1fr; } }
+
+  .schema { padding: 18px; position: sticky; top: 84px; }
+  @media (max-width: 860px) { .schema { position: static; } }
+  .schema ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; }
+  .tbl { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); font: 500 0.9rem var(--mono); color: var(--ink); cursor: grab; text-align: left; }
+  .tbl:hover { border-color: var(--blue); color: var(--blue); }
+  .tbl:active { cursor: grabbing; }
+  .tbl svg { color: var(--blue); flex: none; }
+  .tbl small { margin-left: auto; color: var(--slate); font-size: 0.72rem; }
+  .cols { font: 0.72rem/1.4 var(--mono); color: var(--slate); padding: 4px 10px 8px; }
+  @media (max-width: 860px) {
+    .schema ul { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .cols { display: none; }
+  }
+
+  .ed-box { border: 1px solid var(--term-edge); background: var(--term); border-radius: var(--r-lg); color: var(--term-text); overflow: hidden; }
+  .ed-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--term-line); font: 0.78rem var(--mono); color: var(--term-dim); }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button { background: none; border: 1px solid transparent; color: var(--term-dim); font: 0.78rem var(--mono); padding: 5px 9px; border-radius: var(--r-sm); cursor: pointer; }
+  .tabs button[aria-pressed='true'] { border-color: var(--term-line); color: #fff; background: #13213a; }
+
+  .build { padding: 32px 22px; font: 1.25rem/2 var(--mono); }
+  .kw { color: #8fb0ff; }
+  .drop { display: inline-block; min-width: 230px; padding: 2px 14px; margin: 0 4px; border: 1.5px dashed #3a4f78; border-radius: var(--r); color: var(--term-dim); font-size: 1rem; text-align: center; transition: border-color 0.15s, background 0.15s; }
+  .drop.over { border-color: #8fb0ff; background: #13213a; color: #fff; }
+  .drop.filled { border-style: solid; border-color: #3d8c6e; color: #7fe0b5; font-size: 1.25rem; }
+  @media (max-width: 600px) { .build { font-size: 1rem; } .drop { min-width: 0; } }
+
+  .free textarea { width: 100%; display: block; background: transparent; color: var(--term-text); border: 0; resize: vertical; padding: 20px 22px; font: 0.95rem/1.7 var(--mono); min-height: 140px; }
+  .free textarea:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #3a4f78; }
+
+  .ed-actions { display: flex; align-items: center; gap: 14px; padding: 0 22px 20px; }
+  .hint { font: 0.75rem var(--mono); color: var(--term-dim); }
+  kbd { border: 1px solid var(--term-line); border-radius: 3px; padding: 1px 5px; }
+
+  .examples { display: grid; gap: 6px; margin-top: 16px; }
+  .ex { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 9px 12px; font: 0.82rem var(--mono); color: var(--ink); cursor: pointer; overflow-x: auto; white-space: nowrap; }
+  .ex:hover { border-color: var(--blue); }
+
+  .out { margin-top: 18px; }
+  .status { font: 0.85rem/1.5 var(--mono); color: var(--slate); }
+  .status:global(.ok) { color: var(--green); }
+  .status:global(.err) { color: var(--red); }
+  .status :global(.stay) { margin-left: 8px; background: none; border: 1px solid var(--line); border-radius: var(--r-sm); font: inherit; color: var(--ink); padding: 2px 8px; cursor: pointer; }
+  .grid-wrap { margin-top: 12px; overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
+  .grid-wrap:empty { display: none; }
+  .grid-wrap :global(table) { border-collapse: collapse; width: 100%; font: 0.82rem/1.45 var(--mono); }
+  .grid-wrap :global(th) { text-align: left; background: var(--th); color: var(--slate); font-weight: 500; position: sticky; top: 0; }
+  .grid-wrap :global(th), .grid-wrap :global(td) { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; max-width: 360px; }
+  .grid-wrap :global(td i) { color: var(--slate); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>

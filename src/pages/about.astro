@@ -1,0 +1,134 @@
+---
+import Base from '../layouts/Base.astro';
+import profile from '../data/profile.json';
+---
+<Base title="About" description="Who Sujit is outside the IDE, plus a quiz to test how well you know him.">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="ident">SELECT * FROM me JOIN hobbies;</span>
+      <h1>Beyond the source code</h1>
+      <p class="lede">{profile.about_intro}</p>
+    </header>
+
+    <div class="hobbies">
+      {profile.hobbies.map((h) => (
+        <article class="card hobby">
+          <span class="ident">hobbies.{h.tag}</span>
+          <h2>{h.title}</h2>
+          {h.image && <img src={h.image} alt={h.title} loading="lazy" />}
+          <p>{h.text}</p>
+        </article>
+      ))}
+    </div>
+
+    <section class="card quiz" id="quiz">
+      <div class="quiz-head">
+        <h2>Think you know me?</h2>
+        <p>{profile.quiz.length} questions. Pick an answer to lock it in.</p>
+      </div>
+      <ol class="qs">
+        {profile.quiz.map((q, i) => (
+          <li class="q" data-answer={q.answer}>
+            <p class="q-text">{q.question}</p>
+            <div class="opts">
+              {q.options.map((o, j) => <button type="button" data-opt={j}>{o}</button>)}
+            </div>
+            <p class="reveal" hidden>{q.reveal}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="score" aria-live="polite" hidden>
+        <p data-score></p>
+        <button type="button" class="btn ghost" data-reset>Try again</button>
+      </div>
+    </section>
+
+    <section class="section values">
+      {profile.values.map((v) => (
+        <div>
+          <h3>{v.title}</h3>
+          <p>{v.text}</p>
+        </div>
+      ))}
+    </section>
+
+    <section class="card contact">
+      <div>
+        <h2>Say hello</h2>
+        <p>Hiring, collaborating, or just want to talk .NET? My inbox is open.</p>
+      </div>
+      <div class="contact-btns">
+        <a class="btn" href={`mailto:${profile.email}`}>Email me</a>
+        <a class="btn ghost" href={profile.resume} download>Download resume</a>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  const qs = [...document.querySelectorAll<HTMLElement>('.q')];
+  const scoreBox = document.querySelector<HTMLElement>('.score')!;
+  const scoreText = scoreBox.querySelector('[data-score]')!;
+  let right = 0;
+
+  qs.forEach((q) => q.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-opt]');
+    if (!btn || q.dataset.done) return;
+    q.dataset.done = '1';
+    const answer = q.dataset.answer!;
+    q.querySelectorAll<HTMLButtonElement>('[data-opt]').forEach((b) => {
+      b.disabled = true;
+      if (b.dataset.opt === answer) b.classList.add('right');
+    });
+    if (btn.dataset.opt === answer) right++;
+    else btn.classList.add('wrong');
+    q.querySelector<HTMLElement>('.reveal')!.hidden = false;
+    if (qs.every((x) => x.dataset.done)) {
+      const lines = ['Total stranger. We should fix that.', 'We have met, maybe once.', 'Solid. Are we friends?', 'Okay, you definitely know me.'];
+      scoreText.textContent = `${right} / ${qs.length} correct. ${lines[Math.round((right / qs.length) * 3)]}`;
+      scoreBox.hidden = false;
+    }
+  }));
+
+  scoreBox.querySelector('[data-reset]')!.addEventListener('click', () => {
+    right = 0;
+    scoreBox.hidden = true;
+    qs.forEach((q) => {
+      delete q.dataset.done;
+      q.querySelector<HTMLElement>('.reveal')!.hidden = true;
+      q.querySelectorAll<HTMLButtonElement>('[data-opt]').forEach((b) => { b.disabled = false; b.className = ''; });
+    });
+  });
+</script>
+
+<style>
+  .hobbies { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .hobby { display: grid; gap: 10px; align-content: start; }
+  .hobby h2 { font-size: 1.35rem; }
+  .hobby img { border-radius: var(--r); aspect-ratio: 16 / 10; object-fit: cover; width: 100%; }
+  .hobby p { color: var(--slate); font-size: 0.95rem; }
+
+  .quiz { margin-top: 28px; background: var(--blue-soft); border-color: var(--quiz-line); padding: 32px; }
+  @media (max-width: 600px) { .quiz { padding: 20px; } }
+  .quiz-head p { color: var(--slate); margin-top: 6px; }
+  .qs { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 14px; counter-reset: q; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; counter-increment: q; }
+  .q-text { font-weight: 500; margin-bottom: 12px; }
+  .q-text::before { content: counter(q) '. '; color: var(--blue); font-family: var(--mono); }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .opts button { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; font: 0.93rem var(--sans); color: var(--ink); cursor: pointer; }
+  .opts button:hover:not(:disabled) { border-color: var(--blue); }
+  .opts button:disabled { cursor: default; opacity: 0.55; }
+  .opts button:global(.right) { opacity: 1; border-color: var(--green); background: var(--ok-bg); color: var(--ok-text); }
+  .opts button:global(.wrong) { opacity: 1; border-color: var(--red); background: var(--bad-bg); color: var(--bad-text); }
+  .reveal { margin-top: 12px; font-size: 0.9rem; color: var(--slate); }
+  .score { margin-top: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-weight: 500; }
+
+  .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; border-bottom: 1px solid var(--line); }
+  .values h3 { font-size: 1.35rem; margin-bottom: 8px; }
+  .values p { color: var(--slate); }
+
+  .contact { margin-top: 48px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .contact p { color: var(--slate); margin-top: 6px; }
+  .contact-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+</style>

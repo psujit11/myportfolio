@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import profile from '../data/profile.json';
+import { getProjects } from '../lib';
+import { Code } from 'astro:components';
+
+const projects = await getProjects();
+---
+<Base title="Projects" description="Projects by Sujit Sharma Poudel: .NET APIs, web apps and ML experiments.">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="ident">SELECT * FROM projects;</span>
+      <h1>Projects</h1>
+      <p class="lede">Things I've built: a multi-tenant SaaS, .NET APIs and web apps, and an ML experiment from university.</p>
+    </header>
+
+    <div class="bento">
+      {projects.map((p) => (
+        <article class:list={['card', 'proj', { featured: p.data.featured && p.data.snippet }]}>
+          <div class="proj-body">
+            <div class="proj-head">
+              <h2>{p.data.title}</h2>
+              <div class="chips">{p.data.tags.map((t) => <span class="chip">{t}</span>)}</div>
+            </div>
+            <p class="summary">{p.data.summary}</p>
+            {(p.data.repo || p.data.live || p.data.private) && (
+              <div class="link-row proj-links">
+                {p.data.repo && <a href={p.data.repo} target="_blank" rel="noopener"><Icon name="code" size={16} /> source</a>}
+                {p.data.private && <span class="private"><Icon name="code" size={16} /> private repo</span>}
+                {p.data.live && <a href={p.data.live} target="_blank" rel="noopener"><Icon name="arrow" size={16} /> live</a>}
+              </div>
+            )}
+          </div>
+          {p.data.featured && p.data.snippet && (
+            <div class="snippet"><Code code={p.data.snippet.trimEnd()} lang={p.data.snippet_lang as any} theme="github-dark-dimmed" /></div>
+          )}
+        </article>
+      ))}
+      <a class="card more" href={profile.github} target="_blank" rel="noopener">
+        <Icon name="github" size={28} />
+        <h2>More on GitHub</h2>
+        <p>Experiments, practice repos and work in progress.</p>
+      </a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 960px) { .bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .bento { grid-template-columns: 1fr; } }
+
+  .proj { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+  .proj-body { padding: 26px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .proj-head { display: grid; gap: 10px; }
+  .proj h2 { font-size: 1.4rem; }
+  .summary { color: var(--slate); font-size: 0.95rem; }
+  .proj-links { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
+
+  .featured { grid-column: span 3; flex-direction: row; background: var(--term); border-color: var(--term-edge); color: #fff; }
+  .featured .summary { color: var(--term-text); }
+  .featured .chip { background: #16264a; color: #a9c1ff; }
+  .featured .proj-links { border-color: var(--term-line); }
+  .featured .proj-links a { color: #8fb0ff; }
+  .featured .proj-body { flex: 1 1 45%; }
+  .snippet { flex: 1 1 55%; padding: 26px; background: #121e33; display: flex; align-items: center; min-width: 0; }
+  .snippet :global(pre) { margin: 0; padding: 20px; border-radius: var(--r); font-size: 0.82rem; line-height: 1.7; overflow-x: auto; width: 100%; border: 1px solid var(--term-line); }
+  @media (max-width: 960px) { .featured { grid-column: span 2; } }
+  @media (max-width: 760px) { .featured { flex-direction: column; grid-column: auto; } }
+
+  .more { display: grid; align-content: center; gap: 8px; text-decoration: none; color: var(--ink); border-style: dashed; background: transparent; }
+  .more:hover { border-color: var(--blue); color: var(--blue); }
+  .private { display: inline-flex; gap: 6px; align-items: center; color: var(--slate); }
+  .featured .private { color: var(--term-dim); }
+  .more h2 { font-size: 1.4rem; }
+  .more p { color: var(--slate); }
+</style>

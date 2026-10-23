@@ -1,0 +1,139 @@
+# Content manager for the site. Open /admin to edit.
+# Production: logs in with GitHub through Netlify (see README). Change `repo` to your GitHub repo.
+backend:
+  name: github
+  repo: psujit11/myportfolio
+  branch: main
+# Local editing without login: run `npm run cms` next to `npm run dev`, then open http://localhost:4321/admin/
+local_backend: true
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: blog
+    label: Blog posts
+    label_singular: Post
+    folder: src/content/blog
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Short description, widget: string }
+      - { name: date, label: Publish date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: draft, label: Draft (hidden on the live site), widget: boolean, default: false }
+      - { name: body, label: Post, widget: markdown }
+
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/content/projects
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: summary, label: Summary, widget: text }
+      - { name: tags, label: Tech, widget: list }
+      - { name: repo, label: Source code URL, widget: string, required: false }
+      - { name: live, label: Live demo URL, widget: string, required: false }
+      - { name: private, label: Private repo (shows a label instead of a source link), widget: boolean, default: false }
+      - { name: order, label: Order (1 shows first), widget: number, value_type: int, default: 10 }
+      - { name: featured, label: "Featured (big card, shows the code snippet)", widget: boolean, default: false }
+      - { name: snippet, label: Code snippet, widget: text, required: false }
+      - { name: snippet_lang, label: Snippet language, widget: select, options: [csharp, typescript, javascript, sql, python, json, bash, text], default: csharp, required: false }
+
+  - name: experience
+    label: Experience
+    label_singular: Job
+    folder: src/content/experience
+    create: true
+    slug: "{{company}}"
+    summary: "{{role}} at {{company}}"
+    fields:
+      - { name: role, label: Role, widget: string }
+      - { name: company, label: Company, widget: string }
+      - { name: location, label: Location, widget: string }
+      - { name: start, label: Start date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { name: end, label: End date (leave empty if current), widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { name: stack, label: Tech stack, widget: list, required: false }
+      - name: highlights
+        label: Highlights
+        widget: list
+        required: false
+        fields:
+          - { name: title, label: Title, widget: string }
+          - { name: text, label: Text, widget: text }
+
+  - name: education
+    label: Education
+    folder: src/content/education
+    create: true
+    slug: "{{slug}}"
+    identifier_field: degree
+    summary: "{{degree}}"
+    fields:
+      - { name: degree, label: Degree, widget: string }
+      - { name: school, label: School, widget: string }
+      - { name: location, label: Location, widget: string }
+      - { name: start, label: Start date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { name: end, label: End date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { name: score, label: Score, widget: string, required: false }
+      - { name: modules, label: Subjects, widget: list, required: false }
+      - { name: summary, label: Summary, widget: text }
+
+  - name: settings
+    label: Profile & about
+    files:
+      - name: profile
+        label: Profile, skills, hobbies & quiz
+        file: src/data/profile.json
+        fields:
+          - { name: name, label: Full name, widget: string }
+          - { name: short_name, label: Short name, widget: string }
+          - { name: title, label: Job title, widget: string }
+          - { name: location, label: Location, widget: string }
+          - { name: email, label: Contact email, widget: string }
+          - { name: github, label: GitHub URL, widget: string }
+          - { name: linkedin, label: LinkedIn URL, widget: string }
+          - { name: resume, label: Resume PDF, widget: file }
+          - { name: intro, label: Home intro, widget: text }
+          - { name: about_intro, label: About page intro, widget: text }
+          - name: skill_groups
+            label: Skill groups
+            widget: list
+            fields:
+              - { name: group, label: Group (lowercase), widget: string }
+              - { name: items, label: Skills, widget: list }
+          - { name: languages, label: Spoken languages, widget: list }
+          - name: certifications
+            label: Certifications
+            widget: list
+            fields:
+              - { name: title, label: Title, widget: string }
+              - { name: issuer, label: Issuer, widget: string }
+              - { name: year, label: Year, widget: string }
+              - { name: topics, label: Topics, widget: list, required: false }
+          - name: hobbies
+            label: Hobbies
+            widget: list
+            fields:
+              - { name: title, label: Title, widget: string }
+              - { name: tag, label: Tag (one word), widget: string }
+              - { name: text, label: Text, widget: text }
+              - { name: image, label: Photo, widget: image, required: false }
+          - name: quiz
+            label: Quiz questions
+            widget: list
+            fields:
+              - { name: question, label: Question, widget: string }
+              - { name: options, label: Options, widget: list }
+              - { name: answer, label: "Correct option (0 = first)", widget: number, value_type: int, min: 0 }
+              - { name: reveal, label: Shown after answering, widget: string }
+          - name: values
+            label: Values
+            widget: list
+            fields:
+              - { name: title, label: Title, widget: string }
+              - { name: text, label: Text, widget: text }

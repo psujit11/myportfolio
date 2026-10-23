@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import profile from '../data/profile.json';
+import { fmtMonth, getExperience, getEducation } from '../lib';
+
+const [experience, education] = await Promise.all([getExperience(), getEducation()]);
+const pad = (n: number) => String(n + 1).padStart(2, '0');
+---
+<Base title="Experience" description="Work history, education, skills and certifications of Sujit Sharma Poudel.">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="ident">SELECT * FROM experience ORDER BY start_date DESC;</span>
+      <h1>Experience</h1>
+      <p class="lede">Where I've worked, what I shipped, and the schooling that got me here.</p>
+    </header>
+
+    <div class="layout">
+      <ol class="timeline">
+        {experience.map((e, i) => (
+          <li class="card job" id={e.id}>
+            <div class="job-top">
+              <span class="ident">{fmtMonth(e.data.start)} to {fmtMonth(e.data.end)}</span>
+              {!e.data.end && <span class="live">current</span>}
+            </div>
+            <h2>{e.data.role}</h2>
+            <p class="where">{e.data.company}, {e.data.location}</p>
+            {e.data.highlights.length > 0 && (
+              <ul class="log term">
+                {e.data.highlights.map((h, j) => (
+                  <li><span class="n">[log_{pad(j)}]</span><span><b>{h.title}.</b> {h.text}</span></li>
+                ))}
+              </ul>
+            )}
+            <div class="chips">{e.data.stack.map((t) => <span class="chip grey">{t}</span>)}</div>
+          </li>
+        ))}
+      </ol>
+
+      <aside class="side">
+        <section class="card" id="skills">
+          <h3>Skills</h3>
+          {profile.skill_groups.map((g) => (
+            <div class="group">
+              <p class="ident muted">skills.{g.group}</p>
+              <div class="chips">{g.items.map((s) => <span class="chip">{s}</span>)}</div>
+            </div>
+          ))}
+          <div class="group">
+            <p class="ident muted">languages</p>
+            <p class="langs">{profile.languages.join(', ')}</p>
+          </div>
+        </section>
+
+        <section class="card" id="certifications">
+          <h3>Certifications</h3>
+          {profile.certifications.map((c) => (
+            <div class="cert">
+              <p class="ident">{c.issuer}, {c.year}</p>
+              <p class="cert-title">{c.title}</p>
+              <div class="chips">{c.topics.map((t) => <span class="chip grey">{t}</span>)}</div>
+            </div>
+          ))}
+        </section>
+      </aside>
+    </div>
+
+    <section class="section" id="education">
+      <div class="section-title"><h2>Education</h2></div>
+      <p class="edu-note">Versioned like releases. Each one shipped on top of the last.</p>
+      <div class="releases">
+        {education.map((ed, i) => (
+          <article class="card release">
+            <header class="rel-head">
+              <span class:list={['ver', { old: i > 0 }]}>v{education.length - i}.0{i === 0 ? ' stable' : ''}</span>
+              <h3>{ed.data.degree}</h3>
+              <span class="ident muted">{ed.data.start.getUTCFullYear()} to {ed.data.end?.getUTCFullYear() ?? 'now'}</span>
+            </header>
+            <p class="school">{ed.data.school}, {ed.data.location}</p>
+            <p class="summary">{ed.data.summary}</p>
+            {ed.data.score && <p class="ident muted">{ed.data.score}</p>}
+            {ed.data.modules.length > 0 && <div class="chips">{ed.data.modules.map((m) => <span class="chip">{m}</span>)}</div>}
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 26px; border-left: 2px solid var(--line); display: grid; gap: 24px; }
+  .job { position: relative; display: grid; gap: 12px; scroll-margin-top: 90px; }
+  .job::before { content: ''; position: absolute; left: -34px; top: 30px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper); border: 2px solid var(--slate); }
+  .job:first-child::before { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
+  .job-top { display: flex; justify-content: space-between; align-items: center; }
+  .live { font: 500 0.75rem var(--mono); color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+  .live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .job h2 { font-size: 1.5rem; }
+  .where { color: var(--slate); font-size: 0.95rem; margin-top: -6px; }
+  .log { list-style: none; margin: 4px 0; display: grid; gap: 10px; font-family: var(--sans); font-size: 0.93rem; line-height: 1.6; }
+  .log li { display: grid; grid-template-columns: auto 1fr; gap: 14px; }
+  .log .n { font-family: var(--mono); color: var(--term-dim); font-size: 0.82rem; padding-top: 2px; }
+  .log b { color: #fff; font-weight: 500; }
+
+  .side { display: grid; gap: 20px; position: sticky; top: 84px; }
+  @media (max-width: 900px) { .side { position: static; } }
+  .side h3 { margin-bottom: 14px; }
+  .group { margin-top: 14px; display: grid; gap: 8px; }
+  .langs { font-size: 0.95rem; }
+  .cert { display: grid; gap: 8px; }
+  .cert-title { font-weight: 500; }
+
+  #education { scroll-margin-top: 80px; }
+  .edu-note { color: var(--slate); margin: -12px 0 20px; }
+  .releases { display: grid; gap: 16px; }
+  .release { display: grid; gap: 10px; }
+  .rel-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .rel-head h3 { flex: 1; min-width: 220px; font-size: 1.25rem; }
+  .ver { font: 500 0.75rem var(--mono); background: var(--blue); color: var(--on-blue); padding: 5px 9px; border-radius: 99px; }
+  .ver.old { background: #3b4a61; color: #fff; }
+  .school { color: var(--ink); font-weight: 500; }
+  .summary { color: var(--slate); max-width: 72ch; }
+</style>

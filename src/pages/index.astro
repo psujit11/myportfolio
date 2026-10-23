@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import profile from '../data/profile.json';
+import { fmtMonth, fmtDay, getExperience, getProjects, getPosts } from '../lib';
+
+const [experience, projects, posts] = await Promise.all([getExperience(), getProjects(), getPosts()]);
+const now = experience[0];
+const tables = [
+  { name: 'projects', href: '/projects', rows: projects.length, text: 'Things I built, with source.' },
+  { name: 'experience', href: '/experience', rows: experience.length, text: 'Where I worked, what I shipped, what I studied.' },
+  { name: 'about', href: '/about', rows: profile.hobbies.length, text: 'Life outside the IDE, plus a quiz about me.' },
+  { name: 'blog', href: '/blog', rows: posts.length, text: 'Notes on .NET, SQL and whatever I am learning.' },
+];
+---
+<Base>
+  <section class="hero wrap">
+    <div class="hero-text">
+      <p class="ident">{profile.location}</p>
+      <h1>{profile.name}</h1>
+      <p class="lede">{profile.intro}</p>
+    </div>
+
+    <div class="console" aria-label="Terminal intro">
+      <div class="console-bar"><i></i><i></i><i></i><span>psql · {profile.short_name.toLowerCase()}.db</span></div>
+      <pre class="console-body"><span class="l l1"><b>{profile.short_name.toLowerCase()}=#</b> SELECT name, title FROM me;</span>
+<span class="l l2 dim"> name                | title</span>
+<span class="l l2 dim">--------------------+-------------------</span>
+<span class="l l2"> {profile.name.padEnd(19)} | {profile.title}</span>
+<span class="l l2 dim">(1 row)</span>
+
+<span class="l l3"><b>{profile.short_name.toLowerCase()}=#</b> SELECT * FROM visitor WHERE techie = <span class="caret">?</span></span></pre>
+      <div class="gate l l4">
+        <p>Are you a techie?</p>
+        <div class="gate-btns">
+          <button class="btn" data-pick="techie"><Icon name="terminal" size={16} /> Yes, I'll write SQL</button>
+          <button class="btn ghost" data-pick="human">No, just show me around</button>
+        </div>
+        <p class="gate-note">Techies get around by querying the playground. Everyone else gets regular menus.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="gated wrap" id="home">
+    <section class="section">
+      <div class="section-title"><h2>Right now</h2></div>
+      {now && (
+        <a class="card now" href="/experience">
+          <span class="ident">experience.current_role</span>
+          <h3>{now.data.role} at {now.data.company}</h3>
+          <p class="muted">{now.data.location}, {fmtMonth(now.data.start)} to {fmtMonth(now.data.end)}</p>
+          <div class="chips">{now.data.stack.map((t) => <span class="chip">{t}</span>)}</div>
+        </a>
+      )}
+    </section>
+
+    <section class="section">
+      <div class="section-title"><h2>Tables</h2></div>
+      <div class="tables">
+        {tables.map((t) => (
+          <a class="card table" href={t.href}>
+            <span class="t-head"><Icon name="table" /> <code>{t.name}</code><span class="rows">{t.rows} {t.rows === 1 ? 'row' : 'rows'}</span></span>
+            <p>{t.text}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {posts[0] && (
+      <section class="section">
+        <div class="section-title"><h2>Latest post</h2></div>
+        <a class="card post" href={`/blog/${posts[0].id}`}>
+          <span class="ident muted">{fmtDay(posts[0].data.date)}</span>
+          <h3>{posts[0].data.title}</h3>
+          <p class="muted">{posts[0].data.description}</p>
+        </a>
+      </section>
+    )}
+  </div>
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const pick = b.dataset.pick!;
+      try { localStorage.setItem('visitor', pick); } catch {}
+      const root = document.documentElement;
+      if (root.dataset.mode !== 'owner') root.dataset.mode = pick;
+      if (pick === 'techie') location.href = '/playground';
+      else document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+    })
+  );
+</script>
+
+<style>
+  .hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: 48px; align-items: center; padding-top: 72px; padding-bottom: 72px; }
+  .hero h1 { margin-top: 10px; font-size: clamp(2.4rem, 5.5vw, 4rem); }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding-top: 40px; gap: 32px; } }
+
+  .console { border: 1px solid var(--term-edge); background: var(--term); border-radius: var(--r-lg); color: var(--term-text); overflow: hidden; box-shadow: 0 24px 48px -24px var(--shadow); }
+  .console-bar { display: flex; align-items: center; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--term-line); font: 0.75rem var(--mono); color: var(--term-dim); }
+  .console-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--term-line); }
+  .console-bar span { margin-left: 8px; }
+  .console-body { margin: 0; padding: 20px; font: 0.88rem/1.7 var(--mono); overflow-x: auto; white-space: pre; }
+  .console-body b { color: #8fb0ff; font-weight: 500; }
+  .dim { color: var(--term-dim); }
+  .caret { background: #8fb0ff; color: var(--term); padding: 0 2px; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { background: transparent; color: #8fb0ff; } }
+
+  .gate { padding: 4px 20px 22px; }
+  .gate > p:first-child { font: 600 1.25rem var(--sans); color: #fff; margin-bottom: 14px; }
+  .gate-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .gate .btn.ghost { color: #c9d8ff; border-color: #3a4f78; }
+  .gate .btn.ghost:hover { background: #16243d; }
+  .gate-note { font-size: 0.82rem; color: var(--term-dim); margin-top: 14px; }
+
+  /* The one orchestrated moment: the console prints line by line. */
+  .l { display: inline-block; animation: print 0.35s ease-out both; }
+  .gate.l { display: block; }
+  .l2 { animation-delay: 0.5s; }
+  .l3 { animation-delay: 1.1s; }
+  .l4 { animation-delay: 1.5s; }
+  @keyframes print { from { opacity: 0; transform: translateY(4px); } }
+
+  .gated { display: none; }
+  :global(html[data-mode='human']) .gated, :global(html[data-mode='owner']) .gated { display: block; }
+
+  .muted { color: var(--slate); }
+  .now { display: grid; gap: 10px; text-decoration: none; color: inherit; max-width: 720px; }
+  .now:hover, .table:hover, .post:hover { border-color: var(--blue); }
+  .tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .table { text-decoration: none; color: inherit; display: grid; gap: 10px; }
+  .t-head { display: flex; align-items: center; gap: 8px; color: var(--blue); }
+  .t-head code { font-size: 1.05rem; font-weight: 500; color: var(--ink); }
+  .rows { margin-left: auto; font: 0.75rem var(--mono); color: var(--slate); }
+  .table p { color: var(--slate); font-size: 0.95rem; }
+  .post { display: grid; gap: 8px; text-decoration: none; color: inherit; max-width: 720px; }
+</style>

@@ -1,0 +1,57 @@
+{
+  "name": "Sujit Sharma Poudel",
+  "short_name": "Sujit",
+  "title": "Software Engineer",
+  "location": "Kathmandu, Nepal",
+  "email": "SujitSharmapoudel@gmail.com",
+  "github": "https://github.com/psujit11",
+  "linkedin": "https://www.linkedin.com/in/sujit-sharma-poudel-802738181/",
+  "resume": "/uploads/sujit-poudel-cv.pdf",
+  "intro": ".NET engineer who likes clean architecture, fast queries and code that's still readable a year later. I build web apps and APIs in C#, ASP.NET Core and Blazor, and lately agentic AI.",
+  "about_intro": "I write C# for a living. Off the clock, here's what keeps me balanced. (Placeholders for now; the real me is coming soon.)",
+  "skill_groups": [
+    { "group": "backend", "items": [".NET Core", "C#", "ASP.NET Web API", "ASP.NET MVC", "Entity Framework Core", "ABP Framework", "Domain-Driven Design"] },
+    { "group": "data", "items": ["MS SQL", "PostgreSQL", "MySQL"] },
+    { "group": "frontend", "items": ["Blazor", "MAUI", "TypeScript", "jQuery"] },
+    { "group": "other", "items": ["Agentic AI", "Python", "C", "C++", "Git", "Jira"] }
+  ],
+  "languages": ["Nepali", "English", "Hindi"],
+  "certifications": [
+    {
+      "title": "Complete SQL & Relational Database Management System",
+      "issuer": "Udemy",
+      "year": "2024",
+      "topics": ["Relational databases", "DDL", "DML", "Advanced DDL & DML", "Working with multiple tables"]
+    }
+  ],
+  "hobbies": [
+    { "title": "Weekend treks", "tag": "outdoors", "text": "Placeholder: some Saturdays the laptop stays home and the boots come out. Edit me in /admin.", "image": "" },
+    { "title": "Momo benchmarking", "tag": "food", "text": "Placeholder: an ongoing, highly unscientific search for the best momo in Kathmandu.", "image": "" },
+    { "title": "Late-night playlists", "tag": "music", "text": "Placeholder: lo-fi for refactors, something louder for deadlines.", "image": "" }
+  ],
+  "quiz": [
+    {
+      "question": "Saturday morning, not at my desk. Where am I?",
+      "options": ["On a trail somewhere", "Hunting for momos", "Debugging a side project anyway", "All of the above, in order"],
+      "answer": 3,
+      "reveal": "Placeholder answer. Real answer coming soon."
+    },
+    {
+      "question": "Which editor theme do I code in?",
+      "options": ["Dark+", "Dracula", "One Dark Pro", "Light mode, no regrets"],
+      "answer": 0,
+      "reveal": "Placeholder answer. Edit the quiz in /admin."
+    },
+    {
+      "question": "Tabs or spaces?",
+      "options": ["Tabs", "Spaces", "Whatever .editorconfig says"],
+      "answer": 2,
+      "reveal": "Consistency beats preference."
+    }
+  ],
+  "values": [
+    { "title": "Pragmatic", "text": "Clean architecture where it pays off, plain code where it doesn't." },
+    { "title": "Curious", "text": "Always reading up on what's next in .NET and AI, and actually trying it." },
+    { "title": "Team-first", "text": "Good software comes from good conversations with the people who use it." }
+  ]
+}
