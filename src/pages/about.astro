@@ -1,6 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 import profile from '../data/profile.json';
+
+const pool = profile.quiz.length;
+const lengths = [3, 10, 20].filter((n) => n <= pool);
+if (!lengths.length) lengths.push(pool);
 ---
 <Base title="About" description="Who Sujit is outside the IDE, plus a quiz to test how well you know him.">
   <div class="wrap">
@@ -21,27 +25,50 @@ import profile from '../data/profile.json';
       ))}
     </div>
 
-    <section class="card quiz" id="quiz">
+    <section class="card quiz" id="quiz" data-email={profile.email} data-linkedin={profile.linkedin} data-owner={profile.short_name}>
       <div class="quiz-head">
         <h2>Think you know me?</h2>
-        <p>{profile.quiz.length} questions. Pick an answer to lock it in.</p>
+        <p class="timer" data-timer aria-label="Time elapsed" hidden>00:00</p>
       </div>
-      <ol class="qs">
-        {profile.quiz.map((q, i) => (
-          <li class="q" data-answer={q.answer}>
-            <p class="q-text">{q.question}</p>
-            <div class="opts">
-              {q.options.map((o, j) => <button type="button" data-opt={j}>{o}</button>)}
-            </div>
-            <p class="reveal" hidden>{q.reveal}</p>
-          </li>
-        ))}
-      </ol>
-      <div class="score" aria-live="polite" hidden>
-        <p data-score></p>
-        <button type="button" class="btn ghost" data-reset>Try again</button>
+
+      <form class="stage" data-stage="start">
+        <p class="muted">Pick a length and press start. The clock runs until you submit. Questions are drawn at random from {pool}.</p>
+        <fieldset class="lengths">
+          <legend>Questions</legend>
+          {lengths.map((n, i) => (
+            <label><input type="radio" name="len" value={n} checked={i === 0} /><span>{n}</span></label>
+          ))}
+        </fieldset>
+        <label class="name-field">
+          <span>Your name <small>(optional, included when you send me your result)</small></span>
+          <input name="name" autocomplete="name" maxlength="60" />
+        </label>
+        <button class="btn">Start quiz</button>
+      </form>
+
+      <div class="stage result" data-stage="result" hidden aria-live="polite">
+        <p class="score" data-score></p>
+        <p class="muted" data-verdict></p>
+        <p class="share-label">Send me your result</p>
+        <div class="share">
+          <a class="btn" data-share="mail">Mail app</a>
+          <a class="btn ghost" data-share="gmail" target="_blank" rel="noopener">Gmail</a>
+          <a class="btn ghost" data-share="outlook" target="_blank" rel="noopener">Outlook</a>
+          <button type="button" class="btn ghost" data-share="linkedin">LinkedIn message</button>
+        </div>
+        <p class="share-note" data-share-note></p>
+        <button type="button" class="btn ghost again" data-restart>Play again</button>
       </div>
+
+      <form class="stage run" data-stage="run" hidden>
+        <ol class="qs" data-qs></ol>
+        <div class="run-foot" data-run-foot>
+          <span class="muted" data-progress></span>
+          <button class="btn">Submit answers</button>
+        </div>
+      </form>
     </section>
+    <script type="application/json" id="quiz-data" set:html={JSON.stringify(profile.quiz).replace(/</g, '\\u003c')} />
 
     <section class="section values">
       {profile.values.map((v) => (
@@ -66,38 +93,153 @@ import profile from '../data/profile.json';
 </Base>
 
 <script>
-  const qs = [...document.querySelectorAll<HTMLElement>('.q')];
-  const scoreBox = document.querySelector<HTMLElement>('.score')!;
-  const scoreText = scoreBox.querySelector('[data-score]')!;
-  let right = 0;
+  type Q = { question: string; options: string[]; answer: number; reveal: string };
+  const pool: Q[] = JSON.parse(document.getElementById('quiz-data')!.textContent!);
+  const quiz = document.getElementById('quiz')!;
+  const $ = <T extends Element = HTMLElement>(s: string) => quiz.querySelector<T>(s)!;
+  const startForm = $<HTMLFormElement>('[data-stage=start]');
+  const runForm = $<HTMLFormElement>('[data-stage=run]');
+  const result = $('[data-stage=result]');
+  const runFoot = $('[data-run-foot]');
+  const list = $('[data-qs]');
+  const timerEl = $('[data-timer]');
+  const progress = $('[data-progress]');
+  const note = $('[data-share-note]');
+  const { email, linkedin, owner } = quiz.dataset as Record<string, string>;
 
-  qs.forEach((q) => q.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-opt]');
-    if (!btn || q.dataset.done) return;
-    q.dataset.done = '1';
-    const answer = q.dataset.answer!;
-    q.querySelectorAll<HTMLButtonElement>('[data-opt]').forEach((b) => {
-      b.disabled = true;
-      if (b.dataset.opt === answer) b.classList.add('right');
-    });
-    if (btn.dataset.opt === answer) right++;
-    else btn.classList.add('wrong');
-    q.querySelector<HTMLElement>('.reveal')!.hidden = false;
-    if (qs.every((x) => x.dataset.done)) {
-      const lines = ['Total stranger. We should fix that.', 'We have met, maybe once.', 'Solid. Are we friends?', 'Okay, you definitely know me.'];
-      scoreText.textContent = `${right} / ${qs.length} correct. ${lines[Math.round((right / qs.length) * 3)]}`;
-      scoreBox.hidden = false;
+  let picked: Q[] = [];
+  let started = 0;
+  let tick = 0;
+  let resultText = '';
+
+  const fmt = (ms: number) => {
+    const s = Math.floor(ms / 1000);
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  };
+  const shuffle = <T,>(a: T[]) => {
+    const b = [...a];
+    for (let i = b.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [b[i], b[j]] = [b[j], b[i]];
     }
-  }));
+    return b;
+  };
+  const answered = () => runForm.querySelectorAll('input:checked').length;
+  const updateProgress = () => (progress.textContent = `${answered()} of ${picked.length} answered`);
 
-  scoreBox.querySelector('[data-reset]')!.addEventListener('click', () => {
-    right = 0;
-    scoreBox.hidden = true;
-    qs.forEach((q) => {
-      delete q.dataset.done;
-      q.querySelector<HTMLElement>('.reveal')!.hidden = true;
-      q.querySelectorAll<HTMLButtonElement>('[data-opt]').forEach((b) => { b.disabled = false; b.className = ''; });
+  function render() {
+    list.replaceChildren(...picked.map((q, i) => {
+      const li = document.createElement('li');
+      li.className = 'q';
+      const text = document.createElement('p');
+      text.className = 'q-text';
+      text.textContent = q.question;
+      const opts = document.createElement('div');
+      opts.className = 'opts';
+      q.options.forEach((o, j) => {
+        const label = document.createElement('label');
+        const input = Object.assign(document.createElement('input'), { type: 'radio', name: `q${i}`, value: String(j) });
+        label.append(input, document.createTextNode(o));
+        opts.append(label);
+      });
+      const reveal = document.createElement('p');
+      reveal.className = 'reveal';
+      reveal.hidden = true;
+      reveal.textContent = q.reveal;
+      li.append(text, opts, reveal);
+      return li;
+    }));
+  }
+
+  startForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    picked = shuffle(pool).slice(0, Number(new FormData(startForm).get('len')));
+    render();
+    updateProgress();
+    startForm.hidden = true;
+    result.hidden = true;
+    runForm.hidden = false;
+    runFoot.hidden = false;
+    started = Date.now();
+    timerEl.textContent = '00:00';
+    timerEl.hidden = false;
+    tick = window.setInterval(() => (timerEl.textContent = fmt(Date.now() - started)), 1000);
+    runForm.querySelector('input')?.focus();
+  });
+
+  runForm.addEventListener('change', updateProgress);
+
+  runForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const missing = picked.length - answered();
+    if (missing && !confirm(`${missing} unanswered. Submit anyway? Unanswered questions count as wrong.`)) return;
+    clearInterval(tick);
+    const time = fmt(Date.now() - started);
+    timerEl.textContent = time;
+
+    let right = 0;
+    [...list.children].forEach((li, i) => {
+      const chosen = li.querySelector<HTMLInputElement>('input:checked');
+      li.querySelectorAll<HTMLInputElement>('input').forEach((input) => {
+        input.disabled = true;
+        if (Number(input.value) === picked[i].answer) input.parentElement!.classList.add('right');
+      });
+      if (chosen && Number(chosen.value) === picked[i].answer) right++;
+      else chosen?.parentElement!.classList.add('wrong');
+      li.querySelector<HTMLElement>('.reveal')!.hidden = false;
     });
+
+    const total = picked.length;
+    const pct = Math.round((right / total) * 100);
+    const verdict =
+      pct < 25 ? 'Total stranger. We should fix that.' :
+      pct < 50 ? "We've met, maybe once." :
+      pct < 80 ? 'Solid. Are we friends?' :
+      'Okay, you definitely know me.';
+    const name = String(new FormData(startForm).get('name') ?? '').trim();
+    $('[data-score]').textContent = `${right} / ${total} correct in ${time}`;
+    $('[data-verdict]').textContent = verdict;
+
+    resultText = [
+      `Hi ${owner}, I took the "Think you know me?" quiz on your portfolio.`,
+      '',
+      ...(name ? [`Name: ${name}`] : []),
+      `Score: ${right}/${total} (${pct}%)`,
+      `Time: ${time}`,
+      `Verdict: ${verdict}`,
+    ].join('\n');
+    const subject = encodeURIComponent(`Quiz result: ${right}/${total}${name ? ` from ${name}` : ''}`);
+    const body = encodeURIComponent(resultText);
+    const to = encodeURIComponent(email);
+    $<HTMLAnchorElement>('[data-share=mail]').href = `mailto:${email}?subject=${subject}&body=${body}`;
+    $<HTMLAnchorElement>('[data-share=gmail]').href = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
+    $<HTMLAnchorElement>('[data-share=outlook]').href = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
+    note.textContent = '';
+
+    runFoot.hidden = true;
+    result.hidden = false;
+    result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // LinkedIn can't prefill a message, so copy the result and open the profile.
+  $('[data-share=linkedin]').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(resultText);
+      note.textContent = 'Result copied. On my LinkedIn profile, click Message and paste it.';
+    } catch {
+      note.textContent = `Copy this and send it on LinkedIn: ${resultText.replace(/\n+/g, ' | ')}`;
+    }
+    window.open(linkedin, '_blank', 'noopener');
+  });
+
+  $('[data-restart]').addEventListener('click', () => {
+    clearInterval(tick);
+    result.hidden = true;
+    runForm.hidden = true;
+    timerEl.hidden = true;
+    startForm.hidden = false;
+    list.replaceChildren();
+    quiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
 
@@ -108,21 +250,48 @@ import profile from '../data/profile.json';
   .hobby img { border-radius: var(--r); aspect-ratio: 16 / 10; object-fit: cover; width: 100%; }
   .hobby p { color: var(--slate); font-size: 0.95rem; }
 
-  .quiz { margin-top: 28px; background: var(--blue-soft); border-color: var(--quiz-line); padding: 32px; }
+  .quiz { margin-top: 28px; background: var(--blue-soft); border-color: var(--quiz-line); padding: 32px; scroll-margin-top: 80px; }
   @media (max-width: 600px) { .quiz { padding: 20px; } }
-  .quiz-head p { color: var(--slate); margin-top: 6px; }
-  .qs { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 14px; counter-reset: q; }
-  .q { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; counter-increment: q; }
-  .q-text { font-weight: 500; margin-bottom: 12px; }
-  .q-text::before { content: counter(q) '. '; color: var(--blue); font-family: var(--mono); }
-  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
-  .opts button { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; font: 0.93rem var(--sans); color: var(--ink); cursor: pointer; }
-  .opts button:hover:not(:disabled) { border-color: var(--blue); }
-  .opts button:disabled { cursor: default; opacity: 0.55; }
-  .opts button:global(.right) { opacity: 1; border-color: var(--green); background: var(--ok-bg); color: var(--ok-text); }
-  .opts button:global(.wrong) { opacity: 1; border-color: var(--red); background: var(--bad-bg); color: var(--bad-text); }
-  .reveal { margin-top: 12px; font-size: 0.9rem; color: var(--slate); }
-  .score { margin-top: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-weight: 500; }
+  .quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .timer { font: 500 1.4rem/1 var(--mono); color: var(--blue); background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--slate); }
+  .stage { margin-top: 18px; display: grid; gap: 18px; justify-items: start; }
+
+  .lengths { border: 0; padding: 0; margin: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .lengths legend { float: left; margin-right: 8px; font-weight: 500; }
+  .lengths label { position: relative; }
+  .lengths input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .lengths span { display: block; min-width: 56px; text-align: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); font: 500 1rem var(--mono); }
+  .lengths input:checked + span { border-color: var(--blue); background: var(--blue); color: var(--on-blue); }
+  .lengths input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .name-field { display: grid; gap: 6px; width: min(100%, 360px); font-weight: 500; }
+  .name-field small { font-weight: 400; color: var(--slate); }
+  .name-field input { font: 1rem var(--sans); padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); color: var(--ink); }
+
+  .run { justify-items: stretch; }
+  .qs { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; counter-reset: q; }
+  .qs :global(.q) { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; counter-increment: q; }
+  .qs :global(.q-text) { font-weight: 500; margin-bottom: 12px; }
+  .qs :global(.q-text::before) { content: counter(q) '. '; color: var(--blue); font-family: var(--mono); }
+  .qs :global(.opts) { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .qs :global(.opts label) { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: var(--r); padding: 11px 14px; font-size: 0.93rem; cursor: pointer; }
+  .qs :global(.opts label:hover) { border-color: var(--blue); }
+  .qs :global(.opts label:has(input:checked:enabled)) { border-color: var(--blue); background: var(--blue-soft); }
+  .qs :global(.opts input) { accent-color: var(--blue); margin: 0; }
+  .qs :global(.opts label:has(input:disabled)) { cursor: default; }
+  .qs :global(.opts label.right) { border-color: var(--green); background: var(--ok-bg); color: var(--ok-text); }
+  .qs :global(.opts label.wrong) { border-color: var(--red); background: var(--bad-bg); color: var(--bad-text); }
+  .qs :global(.reveal) { margin-top: 12px; font-size: 0.9rem; color: var(--slate); }
+  .run-foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; bottom: 0; padding: 14px 0; background: var(--blue-soft); }
+
+  .result { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; gap: 10px; scroll-margin-top: 90px; }
+  .score { font: 600 1.6rem/1.2 var(--sans); }
+  .share-label { font-weight: 500; margin-top: 8px; }
+  .share { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-note { font-size: 0.9rem; color: var(--green); }
+  .share-note:empty { display: none; }
+  .again { margin-top: 6px; }
 
   .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; border-bottom: 1px solid var(--line); }
   .values h3 { font-size: 1.35rem; margin-bottom: 8px; }

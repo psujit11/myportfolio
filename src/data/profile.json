@@ -10,48 +10,319 @@
   "intro": ".NET engineer who likes clean architecture, fast queries and code that's still readable a year later. I build web apps and APIs in C#, ASP.NET Core and Blazor, and lately agentic AI.",
   "about_intro": "I write C# for a living. Off the clock, here's what keeps me balanced. (Placeholders for now; the real me is coming soon.)",
   "skill_groups": [
-    { "group": "backend", "items": [".NET Core", "C#", "ASP.NET Web API", "ASP.NET MVC", "Entity Framework Core", "ABP Framework", "Domain-Driven Design"] },
-    { "group": "data", "items": ["MS SQL", "PostgreSQL", "MySQL"] },
-    { "group": "frontend", "items": ["Blazor", "MAUI", "TypeScript", "jQuery"] },
-    { "group": "other", "items": ["Agentic AI", "Python", "C", "C++", "Git", "Jira"] }
+    {
+      "group": "backend",
+      "items": [
+        ".NET Core",
+        "C#",
+        "ASP.NET Web API",
+        "ASP.NET MVC",
+        "Entity Framework Core",
+        "ABP Framework",
+        "Domain-Driven Design"
+      ]
+    },
+    {
+      "group": "data",
+      "items": [
+        "MS SQL",
+        "PostgreSQL",
+        "MySQL"
+      ]
+    },
+    {
+      "group": "frontend",
+      "items": [
+        "Blazor",
+        "MAUI",
+        "TypeScript",
+        "jQuery"
+      ]
+    },
+    {
+      "group": "other",
+      "items": [
+        "Agentic AI",
+        "Python",
+        "C",
+        "C++",
+        "Git",
+        "Jira"
+      ]
+    }
   ],
-  "languages": ["Nepali", "English", "Hindi"],
+  "languages": [
+    "Nepali",
+    "English",
+    "Hindi"
+  ],
   "certifications": [
     {
       "title": "Complete SQL & Relational Database Management System",
       "issuer": "Udemy",
       "year": "2024",
-      "topics": ["Relational databases", "DDL", "DML", "Advanced DDL & DML", "Working with multiple tables"]
+      "topics": [
+        "Relational databases",
+        "DDL",
+        "DML",
+        "Advanced DDL & DML",
+        "Working with multiple tables"
+      ]
     }
   ],
   "hobbies": [
-    { "title": "Weekend treks", "tag": "outdoors", "text": "Placeholder: some Saturdays the laptop stays home and the boots come out. Edit me in /admin.", "image": "" },
-    { "title": "Momo benchmarking", "tag": "food", "text": "Placeholder: an ongoing, highly unscientific search for the best momo in Kathmandu.", "image": "" },
-    { "title": "Late-night playlists", "tag": "music", "text": "Placeholder: lo-fi for refactors, something louder for deadlines.", "image": "" }
+    {
+      "title": "Weekend treks",
+      "tag": "outdoors",
+      "text": "Placeholder: some Saturdays the laptop stays home and the boots come out. Edit me in /admin.",
+      "image": ""
+    },
+    {
+      "title": "Momo benchmarking",
+      "tag": "food",
+      "text": "Placeholder: an ongoing, highly unscientific search for the best momo in Kathmandu.",
+      "image": ""
+    },
+    {
+      "title": "Late-night playlists",
+      "tag": "music",
+      "text": "Placeholder: lo-fi for refactors, something louder for deadlines.",
+      "image": ""
+    }
   ],
   "quiz": [
     {
       "question": "Saturday morning, not at my desk. Where am I?",
-      "options": ["On a trail somewhere", "Hunting for momos", "Debugging a side project anyway", "All of the above, in order"],
+      "options": [
+        "On a trail somewhere",
+        "Hunting for momos",
+        "Debugging a side project anyway",
+        "All of the above, in order"
+      ],
       "answer": 3,
       "reveal": "Placeholder answer. Real answer coming soon."
     },
     {
       "question": "Which editor theme do I code in?",
-      "options": ["Dark+", "Dracula", "One Dark Pro", "Light mode, no regrets"],
+      "options": [
+        "Dark+",
+        "Dracula",
+        "One Dark Pro",
+        "Light mode, no regrets"
+      ],
       "answer": 0,
       "reveal": "Placeholder answer. Edit the quiz in /admin."
     },
     {
       "question": "Tabs or spaces?",
-      "options": ["Tabs", "Spaces", "Whatever .editorconfig says"],
+      "options": [
+        "Tabs",
+        "Spaces",
+        "Whatever .editorconfig says"
+      ],
       "answer": 2,
       "reveal": "Consistency beats preference."
+    },
+    {
+      "question": "Coffee or tea?",
+      "options": [
+        "Coffee",
+        "Milk tea",
+        "Both, depending on the bug",
+        "Neither"
+      ],
+      "answer": 1,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Which language do I enjoy writing most?",
+      "options": [
+        "C#",
+        "TypeScript",
+        "Python",
+        "SQL"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "My go-to database?",
+      "options": [
+        "SQL Server",
+        "PostgreSQL",
+        "MySQL",
+        "SQLite"
+      ],
+      "answer": 1,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Favorite food?",
+      "options": [
+        "Momo",
+        "Dal bhat",
+        "Pizza",
+        "Chowmein"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Early bird or night owl?",
+      "options": [
+        "Early bird",
+        "Night owl",
+        "Depends on the deadline",
+        "Both, unfortunately"
+      ],
+      "answer": 2,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Which OS do I use daily?",
+      "options": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Whatever runs Visual Studio"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Which editor do I open first?",
+      "options": [
+        "Visual Studio",
+        "VS Code",
+        "Rider",
+        "Vim"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Dream travel destination?",
+      "options": [
+        "Japan",
+        "Switzerland",
+        "Iceland",
+        "The hills back home"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Stuck on a bug. What do I do first?",
+      "options": [
+        "Take a walk",
+        "Explain it to a rubber duck",
+        "Read the docs",
+        "Add more logging"
+      ],
+      "answer": 3,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Favorite season in Kathmandu?",
+      "options": [
+        "Spring",
+        "Monsoon",
+        "Autumn",
+        "Winter"
+      ],
+      "answer": 2,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Which sport do I follow most?",
+      "options": [
+        "Cricket",
+        "Football",
+        "Formula 1",
+        "None"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "What plays while I code?",
+      "options": [
+        "Lo-fi",
+        "Nepali songs",
+        "Rock",
+        "Silence"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "My first programming language?",
+      "options": [
+        "C",
+        "Java",
+        "Python",
+        "QBASIC"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Favorite movie genre?",
+      "options": [
+        "Sci-fi",
+        "Thriller",
+        "Comedy",
+        "Anime"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Ideal weekend?",
+      "options": [
+        "A trek",
+        "Movie marathon",
+        "Side project",
+        "Family time"
+      ],
+      "answer": 3,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Biggest code pet peeve?",
+      "options": [
+        "Magic numbers",
+        "No tests",
+        "Giant methods",
+        "Inconsistent naming"
+      ],
+      "answer": 2,
+      "reveal": "Placeholder answer. Sujit will update this soon."
+    },
+    {
+      "question": "Dark mode or light mode?",
+      "options": [
+        "Dark",
+        "Light",
+        "Follow the system",
+        "Whatever the screen says"
+      ],
+      "answer": 0,
+      "reveal": "Placeholder answer. Sujit will update this soon."
     }
   ],
   "values": [
-    { "title": "Pragmatic", "text": "Clean architecture where it pays off, plain code where it doesn't." },
-    { "title": "Curious", "text": "Always reading up on what's next in .NET and AI, and actually trying it." },
-    { "title": "Team-first", "text": "Good software comes from good conversations with the people who use it." }
+    {
+      "title": "Pragmatic",
+      "text": "Clean architecture where it pays off, plain code where it doesn't."
+    },
+    {
+      "title": "Curious",
+      "text": "Always reading up on what's next in .NET and AI, and actually trying it."
+    },
+    {
+      "title": "Team-first",
+      "text": "Good software comes from good conversations with the people who use it."
+    }
   ]
 }
