@@ -2,9 +2,10 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import profile from '../data/profile.json';
-import { getExperience, getProjects, getPosts, getEducation } from '../lib';
+import { getExperience, getProjects, getPosts, getEducation, getRepos } from '../lib';
 
-const [experience, projects, posts, education] = await Promise.all([getExperience(), getProjects(), getPosts(), getEducation()]);
+const githubUser = profile.github.split('/').filter(Boolean).pop()!;
+const [experience, projects, posts, education, repos] = await Promise.all([getExperience(), getProjects(), getPosts(), getEducation(), getRepos(githubUser)]);
 const iso = (d?: Date) => (d ? d.toISOString().slice(0, 10) : null);
 
 // Every table maps to the page that shows it. Columns -> rows, all plain values.
@@ -13,6 +14,8 @@ const tables: Record<string, { page: string; cols: string[]; rows: (string | num
     rows: [[profile.name, profile.title, profile.location, profile.email, profile.github, profile.linkedin]] },
   projects: { page: '/projects', cols: ['id', 'title', 'tags', 'repo', 'summary'],
     rows: projects.map((p, i) => [i + 1, p.data.title, p.data.tags.join(', '), p.data.repo ?? null, p.data.summary]) },
+  github_repos: { page: '/projects', cols: ['name', 'language', 'stars', 'forks', 'pushed_at', 'description', 'url'],
+    rows: repos.map((r) => [r.name, r.language, r.stargazers_count, r.forks_count, r.pushed_at.slice(0, 10), r.description, r.html_url]) },
   experience: { page: '/experience', cols: ['id', 'role', 'company', 'location', 'start_date', 'end_date', 'stack'],
     rows: experience.map((e, i) => [i + 1, e.data.role, e.data.company, e.data.location, iso(e.data.start), iso(e.data.end), e.data.stack.join(', ')]) },
   education: { page: '/experience#education', cols: ['id', 'degree', 'school', 'start_date', 'end_date', 'score'],
@@ -33,6 +36,7 @@ const examples = [
   'SELECT company, role, start_date FROM experience ORDER BY start_date DESC;',
   'SELECT category, COUNT(*) AS skills FROM skills GROUP BY category;',
   "SELECT title, repo FROM projects WHERE tags LIKE '%ASP.NET%';",
+  'SELECT language, COUNT(*) AS repos FROM github_repos GROUP BY language ORDER BY repos DESC;',
   "SELECT name FROM sqlite_master WHERE type = 'table';",
 ];
 ---
@@ -130,6 +134,30 @@ const examples = [
     return db;
   }).catch((e) => { status(`Couldn't start SQLite: ${esc(e.message)}`, 'err'); throw e; });
 
+  // The db is in-memory and harmless to break, but the first thing a developer types is DROP TABLE.
+  // Answer that with a joke instead of leaving a broken playground behind.
+  const WRITE = /^\s*(drop|delete|truncate|update|insert|alter|create|replace|attach|detach|pragma|vacuum|reindex)\b/i;
+  const jokes: Record<string, string> = {
+    'update me': 'Promotion requests go through HR.',
+    me: "There's only one of me. Let's keep it that way.",
+    projects: 'Nice try. These projects took years to build.',
+    experience: "My experience can't be deleted. I checked.",
+    education: 'Degrees are non-refundable.',
+    skills: 'Skills are append-only. I keep learning.',
+    certifications: 'Certificates are signed. Literally.',
+    hobbies: 'Hobbies are a protected resource.',
+    blog: "Posts are forever. That's what the internet is for.",
+    github_repos: 'Those live on GitHub. Open a pull request instead.',
+    partner: 'Applications for this table go through the INSERT INTO partner button on /partner.',
+  };
+  function guard(sql: string) {
+    const stmt = sql.split(';').find((s) => WRITE.test(s));
+    if (!stmt) return null;
+    const verb = stmt.match(WRITE)![1].toLowerCase();
+    const table = stmt.match(/\b(?:table|from|into|update|truncate)\s+["`[]?(\w+)/i)?.[1]?.toLowerCase() ?? '';
+    return jokes[`${verb} ${table}`] ?? jokes[table] ?? 'Read-only replica. Writes are disabled for visitors.';
+  }
+
   function render(cols: string[], rows: unknown[][]) {
     const head = cols.map((c) => `<th>${esc(c)}</th>`).join('');
     const body = rows.slice(0, 200).map((r) => `<tr>${r.map((v) => `<td>${v === null ? '<i>null</i>' : esc(v)}</td>`).join('')}</tr>`).join('');
@@ -141,6 +169,11 @@ const examples = [
     const db = await dbReady;
     const sql = mode === 'build' ? (picked && `SELECT * FROM ${picked};`) : sqlEl.value.trim();
     if (!sql) return status('Drop a table into the query first.', 'err');
+    const denied = guard(sql);
+    if (denied) {
+      gridEl.innerHTML = '';
+      return status(`ERROR:&nbsp; permission denied for role "visitor"<br>HINT:&nbsp;&nbsp; ${esc(denied)}`, 'err');
+    }
     const t0 = performance.now();
     try {
       const res = db.exec(sql);

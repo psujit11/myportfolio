@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import profile from '../data/profile.json';
+import ContactForm from '../components/ContactForm.astro';
 
 const pool = profile.quiz.length;
 const lengths = [3, 10, 20].filter((n) => n <= pool);
@@ -51,7 +52,8 @@ if (!lengths.length) lengths.push(pool);
         <p class="muted" data-verdict></p>
         <p class="share-label">Send me your result</p>
         <div class="share">
-          <a class="btn" data-share="mail">Mail app</a>
+          <button type="button" class="btn" data-share="direct">Send to {profile.short_name}</button>
+          <a class="btn ghost" data-share="mail">Mail app</a>
           <a class="btn ghost" data-share="gmail" target="_blank" rel="noopener">Gmail</a>
           <a class="btn ghost" data-share="outlook" target="_blank" rel="noopener">Outlook</a>
           <button type="button" class="btn ghost" data-share="linkedin">LinkedIn message</button>
@@ -79,13 +81,13 @@ if (!lengths.length) lengths.push(pool);
       ))}
     </section>
 
-    <section class="card contact">
-      <div>
-        <h2>Say hello</h2>
-        <p>Hiring, collaborating, or just want to talk .NET? My inbox is open.</p>
-      </div>
+    <section class="section contact" id="contact">
+      <h2>Say hello</h2>
+      <p class="muted">Hiring, collaborating, or just want to talk .NET? Fill in the values and run it.</p>
+      <ContactForm />
       <div class="contact-btns">
-        <button type="button" class="btn" popovertarget="mail-menu">Email me</button>
+        <span class="muted">Prefer email?</span>
+        <button type="button" class="btn ghost" popovertarget="mail-menu">Email me</button>
         <a class="btn ghost" href={profile.resume} download>Download resume</a>
       </div>
     </section>
@@ -93,6 +95,8 @@ if (!lengths.length) lengths.push(pool);
 </Base>
 
 <script>
+  import { sendMessage } from '../send';
+
   type Q = { question: string; options: string[]; answer: number; reveal: string };
   const pool: Q[] = JSON.parse(document.getElementById('quiz-data')!.textContent!);
   const quiz = document.getElementById('quiz')!;
@@ -111,6 +115,8 @@ if (!lengths.length) lengths.push(pool);
   let started = 0;
   let tick = 0;
   let resultText = '';
+  let resultSubject = '';
+  let resultName = '';
 
   const fmt = (ms: number) => {
     const s = Math.floor(ms / 1000);
@@ -208,6 +214,8 @@ if (!lengths.length) lengths.push(pool);
       `Time: ${time}`,
       `Verdict: ${verdict}`,
     ].join('\n');
+    resultSubject = `Quiz result: ${right}/${total}${name ? ` from ${name}` : ''}`;
+    resultName = name;
     const subject = encodeURIComponent(`Quiz result: ${right}/${total}${name ? ` from ${name}` : ''}`);
     const body = encodeURIComponent(resultText);
     const to = encodeURIComponent(email);
@@ -215,10 +223,25 @@ if (!lengths.length) lengths.push(pool);
     $<HTMLAnchorElement>('[data-share=gmail]').href = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
     $<HTMLAnchorElement>('[data-share=outlook]').href = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
     note.textContent = '';
+    directBtn.disabled = false;
 
     runFoot.hidden = true;
     result.hidden = false;
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Straight to my inbox through the contact form backend (Netlify Forms). No mail app needed.
+  const directBtn = $<HTMLButtonElement>('[data-share=direct]');
+  directBtn.addEventListener('click', async () => {
+    directBtn.disabled = true;
+    note.textContent = 'Sending…';
+    try {
+      await sendMessage({ name: resultName || 'Anonymous quiz taker', email: '', subject: resultSubject, message: resultText });
+      note.textContent = 'Sent. Thanks for playing!';
+    } catch (err) {
+      note.textContent = `Couldn't send (${(err as Error).message}). Try email or LinkedIn instead.`;
+      directBtn.disabled = false;
+    }
   });
 
   // LinkedIn can't prefill a message, so copy the result and open the profile.
@@ -297,7 +320,6 @@ if (!lengths.length) lengths.push(pool);
   .values h3 { font-size: 1.35rem; margin-bottom: 8px; }
   .values p { color: var(--slate); }
 
-  .contact { margin-top: 48px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .contact p { color: var(--slate); margin-top: 6px; }
-  .contact-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .contact { display: grid; gap: 16px; max-width: 760px; scroll-margin-top: 80px; }
+  .contact-btns { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 </style>

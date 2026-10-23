@@ -39,3 +39,17 @@ http://localhost:4321/admin/. No login; it writes straight to the files.
 
 Files live in `src/content/*` (one Markdown file per item) and `src/data/profile.json`.
 Uploaded images and the resume go in `public/uploads/`.
+
+## Contact form and quiz results
+
+The `INSERT INTO messages` form on /about (and the quiz's "Send to Sujit" button) use Netlify Forms.
+They only send on the deployed site; locally they show an error and point to the email button.
+After the first deploy: Netlify → Forms → enable form detection, then Forms → Notifications →
+add an email notification so each message lands in your inbox.
+
+## GitHub table
+
+The playground's `github_repos` table is fetched from the GitHub API at build time. Netlify build
+machines share IPs, so add a `GITHUB_TOKEN` environment variable (a fine-grained token with no
+extra permissions is enough) to avoid the anonymous rate limit. If the fetch fails, the table is
+just empty and the build still succeeds.
