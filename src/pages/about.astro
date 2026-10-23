@@ -4,7 +4,7 @@ import profile from '../data/profile.json';
 import ContactForm from '../components/ContactForm.astro';
 
 const pool = profile.quiz.length;
-const lengths = [3, 10, 20].filter((n) => n <= pool);
+const lengths = [10, 20, 30].filter((n) => n <= pool);
 if (!lengths.length) lengths.push(pool);
 ---
 <Base title="About" description="Who Sujit is outside the IDE, plus a quiz to test how well you know him.">
