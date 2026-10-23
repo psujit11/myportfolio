@@ -1,14 +1,18 @@
 {
-  "name": "Sujit Sharma Poudel",
-  "short_name": "Sujit",
-  "title": "Software Engineer",
-  "location": "Kathmandu, Nepal",
-  "email": "SujitSharmapoudel@gmail.com",
-  "github": "https://github.com/psujit11",
-  "linkedin": "https://www.linkedin.com/in/sujit-sharma-poudel-802738181/",
-  "resume": "/uploads/sujit-poudel-cv.pdf",
-  "intro": ".NET engineer who likes clean architecture, fast queries and code that's still readable a year later. I build web apps and APIs in C#, ASP.NET Core and Blazor, and lately agentic AI.",
-  "about_intro": "I write C# for a living. Off the clock, here's what keeps me balanced. (Placeholders for now; the real me is coming soon.)",
+  "values": [
+    {
+      "title": "Pragmatic",
+      "text": "Clean architecture where it pays off, plain code where it doesn't."
+    },
+    {
+      "title": "Curious",
+      "text": "Always reading up on what's next in .NET and AI, and actually trying it."
+    },
+    {
+      "title": "Team-first",
+      "text": "Good software comes from good conversations with the people who use it."
+    }
+  ],
   "skill_groups": [
     {
       "group": "backend",
@@ -51,25 +55,11 @@
       ]
     }
   ],
-  "languages": [
-    "Nepali",
-    "English",
-    "Hindi"
-  ],
-  "certifications": [
-    {
-      "title": "Complete SQL & Relational Database Management System",
-      "issuer": "Udemy",
-      "year": "2024",
-      "topics": [
-        "Relational databases",
-        "DDL",
-        "DML",
-        "Advanced DDL & DML",
-        "Working with multiple tables"
-      ]
-    }
-  ],
+  "github": "https://github.com/psujit11",
+  "name": "Sujit Sharma Poudel",
+  "intro": ".NET engineer who likes clean architecture, fast queries and code that's still readable a year later. I build web apps and APIs in C#, ASP.NET Core and Blazor, and lately agentic AI.",
+  "resume": "/uploads/sujit-poudel-cv.pdf",
+  "short_name": "Sujit",
   "hobbies": [
     {
       "title": "Weekend treks",
@@ -97,10 +87,11 @@
         "On a trail somewhere",
         "Hunting for momos",
         "Debugging a side project anyway",
-        "All of the above, in order"
+        "All of the above",
+        "Sleeping"
       ],
-      "answer": 3,
-      "reveal": "Placeholder answer. Real answer coming soon."
+      "answer": 5,
+      "reveal": "Not just Saturday, i like to sleep in all mornings."
     },
     {
       "question": "Which editor theme do I code in?",
@@ -311,18 +302,28 @@
       "reveal": "Placeholder answer. Sujit will update this soon."
     }
   ],
-  "values": [
+  "location": "Kathmandu, Nepal",
+  "title": "Software Engineer",
+  "certifications": [
     {
-      "title": "Pragmatic",
-      "text": "Clean architecture where it pays off, plain code where it doesn't."
-    },
-    {
-      "title": "Curious",
-      "text": "Always reading up on what's next in .NET and AI, and actually trying it."
-    },
-    {
-      "title": "Team-first",
-      "text": "Good software comes from good conversations with the people who use it."
+      "title": "Complete SQL & Relational Database Management System",
+      "issuer": "Udemy",
+      "year": "2024",
+      "topics": [
+        "Relational databases",
+        "DDL",
+        "DML",
+        "Advanced DDL & DML",
+        "Working with multiple tables"
+      ]
     }
-  ]
+  ],
+  "about_intro": "I write C# for a living. Off the clock, here's what keeps me balanced. (Placeholders for now; the real me is coming soon.)",
+  "languages": [
+    "Nepali",
+    "English",
+    "Hindi"
+  ],
+  "email": "SujitSharmapoudel@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/sujit-sharma-poudel-802738181/"
 }
