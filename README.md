@@ -1,5 +1,7 @@
 # sujit.db
 
+Live: https://sujitsharmapoudel.netlify.app
+
 Portfolio built with Astro. Every page is also a table in an in-browser SQLite playground.
 
 ## Run it
