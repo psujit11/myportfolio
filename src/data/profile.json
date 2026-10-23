@@ -62,21 +62,61 @@
   "short_name": "Sujit",
   "hobbies": [
     {
+      "title": "Fitness and Strength Training",
+      "tag": "fitness",
+      "text": "Making ambitious plans, promising myself I'll start tomorrow, and watching tomorrow turn into next week. Consistency is the goal; procrastination is the current achievement. 😂"
+    },
+    {
+      "title": "Matchday with Liverpool FC",
+      "tag": "football",
+      "text": "A passionate Liverpool fan through and through. Following the Reds, watching Premier League matches, celebrating the wins, and surviving the heartbreaks. You'll Never Walk Alone! 🔴"
+    },
+    {
+      "title": "Reading",
+      "tag": "Book",
+      "text": "Enjoying physical books, getting lost in interesting stories, and discovering ideas that stay with me long after I finish reading."
+    },
+    {
+      "text": "Buying books with the intention of reading them all, finishing a few pages, and buying more before I finish the previous ones. My collection keeps growing, even if my reading progress doesn't. 📚😂",
+      "tag": "books",
+      "title": "Buying Books"
+    },
+    {
+      "title": "Gaming",
+      "tag": "gaming",
+      "text": "Enjoying a good game to unwind after a long day. Sometimes it's about winning; sometimes it's just about having fun."
+    },
+    {
+      "title": "Evening Walks",
+      "tag": "outdoors",
+      "text": "Taking evening walks to clear my head, enjoy some fresh air, and give myself a break from screens and deadlines."
+    },
+    {
+      "title": "Exploring Personal Finance",
+      "tag": " finance",
+      "text": "Learning about investing, budgeting, and financial markets while figuring out how to make smarter decisions with money."
+    },
+    {
       "title": "Weekend treks",
       "tag": "outdoors",
-      "text": "Placeholder: some Saturdays the laptop stays home and the boots come out. Edit me in /admin.",
+      "text": "some Saturdays the laptop stays home and the boots come out. Edit me in /admin.",
       "image": ""
     },
     {
-      "title": "Momo benchmarking",
+      "title": "Food Hunting",
       "tag": "food",
-      "text": "Placeholder: an ongoing, highly unscientific search for the best momo in Kathmandu.",
+      "text": "an ongoing, highly unscientific search for the best food in Kathmandu.",
       "image": ""
+    },
+    {
+      "title": " Late-Night Coding",
+      "tag": "technology",
+      "text": "Building side projects, experimenting with new frameworks, and solving bugs that somehow become more interesting after midnight."
     },
     {
       "title": "Late-night playlists",
       "tag": "music",
-      "text": "Placeholder: lo-fi for refactors, something louder for deadlines.",
+      "text": " lo-fi for refactors, something louder for deadlines. Banger Dohoris for Energy.",
       "image": ""
     }
   ],
@@ -85,13 +125,12 @@
       "question": "Saturday morning, not at my desk. Where am I?",
       "options": [
         "On a trail somewhere",
-        "Hunting for momos",
-        "Debugging a side project anyway",
-        "All of the above",
-        "Sleeping"
+        "Fighting Hangover somewhere",
+        "Sleeping",
+        "All of the above"
       ],
-      "answer": 5,
-      "reveal": "Not just Saturday, i like to sleep in all mornings."
+      "answer": 3,
+      "reveal": "Not All Saturday's are same."
     },
     {
       "question": "Which editor theme do I code in?",
@@ -99,10 +138,11 @@
         "Dark+",
         "Dracula",
         "One Dark Pro",
-        "Light mode, no regrets"
+        "Light mode",
+        "Cool Slate"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Edit the quiz in /admin."
+      "answer": 4,
+      "reveal": "simple"
     },
     {
       "question": "Tabs or spaces?",
@@ -111,7 +151,7 @@
         "Spaces",
         "Whatever .editorconfig says"
       ],
-      "answer": 2,
+      "answer": 1,
       "reveal": "Consistency beats preference."
     },
     {
@@ -122,8 +162,8 @@
         "Both, depending on the bug",
         "Neither"
       ],
-      "answer": 1,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 2,
+      "reveal": "Tea and always tea"
     },
     {
       "question": "Which language do I enjoy writing most?",
@@ -134,7 +174,7 @@
         "SQL"
       ],
       "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "So obvio"
     },
     {
       "question": "My go-to database?",
@@ -144,19 +184,20 @@
         "MySQL",
         "SQLite"
       ],
-      "answer": 1,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 0,
+      "reveal": "Yea, Yea a Big Tech bootlicker"
     },
     {
       "question": "Favorite food?",
       "options": [
         "Momo",
         "Dal bhat",
-        "Pizza",
-        "Chowmein"
+        "Laphin",
+        "Chowmein",
+        "Pizza"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 2,
+      "reveal": "I love every food"
     },
     {
       "question": "Early bird or night owl?",
@@ -166,8 +207,8 @@
         "Depends on the deadline",
         "Both, unfortunately"
       ],
-      "answer": 2,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 1,
+      "reveal": "Insomniac to be precise "
     },
     {
       "question": "Which OS do I use daily?",
@@ -178,7 +219,7 @@
         "Whatever runs Visual Studio"
       ],
       "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "Again , Vendor shill"
     },
     {
       "question": "Which editor do I open first?",
@@ -189,18 +230,18 @@
         "Vim"
       ],
       "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "i got jet engine in my device."
     },
     {
       "question": "Dream travel destination?",
       "options": [
         "Japan",
+        "Indonesia",
         "Switzerland",
-        "Iceland",
         "The hills back home"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 3,
+      "reveal": "TBH, anywhere new sound good"
     },
     {
       "question": "Stuck on a bug. What do I do first?",
@@ -211,7 +252,7 @@
         "Add more logging"
       ],
       "answer": 3,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "one more reason to thank claude."
     },
     {
       "question": "Favorite season in Kathmandu?",
@@ -221,8 +262,8 @@
         "Autumn",
         "Winter"
       ],
-      "answer": 2,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 3,
+      "reveal": "Overall winter but Dashain weather "
     },
     {
       "question": "Which sport do I follow most?",
@@ -233,7 +274,7 @@
         "None"
       ],
       "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "YNWA"
     },
     {
       "question": "What plays while I code?",
@@ -243,8 +284,8 @@
         "Rock",
         "Silence"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 1,
+      "reveal": "Mostly "
     },
     {
       "question": "My first programming language?",
@@ -254,8 +295,8 @@
         "Python",
         "QBASIC"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 3,
+      "reveal": "technically ,,,,,,,, been coding for ages now "
     },
     {
       "question": "Favorite movie genre?",
@@ -265,8 +306,8 @@
         "Comedy",
         "Anime"
       ],
-      "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 1,
+      "reveal": "exploring Sci0fi also recently"
     },
     {
       "question": "Ideal weekend?",
@@ -274,10 +315,11 @@
         "A trek",
         "Movie marathon",
         "Side project",
-        "Family time"
+        "Family time",
+        "Do-nothing"
       ],
-      "answer": 3,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 5,
+      "reveal": "I guess i am matt le blanc"
     },
     {
       "question": "Biggest code pet peeve?",
@@ -287,8 +329,8 @@
         "Giant methods",
         "Inconsistent naming"
       ],
-      "answer": 2,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "answer": 3,
+      "reveal": "you know it , why "
     },
     {
       "question": "Dark mode or light mode?",
@@ -299,7 +341,129 @@
         "Whatever the screen says"
       ],
       "answer": 0,
-      "reveal": "Placeholder answer. Sujit will update this soon."
+      "reveal": "I am dark i guess"
+    },
+    {
+      "question": "Favourite Sitcoms",
+      "options": [
+        "Friends",
+        "Big Bang theory",
+        "The neighbourhood",
+        "Man with a plan",
+        "ModernFamily"
+      ],
+      "answer": 1,
+      "reveal": "I also recommend the neighboorhood"
+    },
+    {
+      "question": "Favourite Series Ever",
+      "options": [
+        "Mindhunter",
+        "Sherlock Holmes",
+        "GOT",
+        "Friends",
+        "Big Bang Theory",
+        "Into The Night"
+      ],
+      "reveal": "Try Into The Night as well",
+      "answer": 0
+    },
+    {
+      "question": "When is my Birth Year?",
+      "options": [
+        "1999",
+        "2000",
+        "2001",
+        "2002"
+      ],
+      "answer": 2,
+      "reveal": "i expect you to choose 2000 but thats wriong"
+    },
+    {
+      "question": "Favourite Book",
+      "options": [
+        "White Nights",
+        "Palpasa Cafe",
+        "Sapiens",
+        "Norwegian wood"
+      ],
+      "answer": 1,
+      "reveal": "read it"
+    },
+    {
+      "question": "Favourite Game",
+      "options": [
+        "Fifa",
+        "PES",
+        "PUBG",
+        "Valorant",
+        "LOL"
+      ],
+      "answer": 0,
+      "reveal": "Go on"
+    },
+    {
+      "question": "Favourite Festival",
+      "options": [
+        "All",
+        "Dashain",
+        "Tihar",
+        "Holi",
+        "None"
+      ],
+      "answer": 4,
+      "reveal": "i dont care about festival, i care about holidays only"
+    },
+    {
+      "question": "Greatest Team??",
+      "options": [
+        "Real Madrid",
+        "Barcelona",
+        "Manchester United",
+        "Liverpool",
+        "Bayern Munich"
+      ],
+      "answer": 3,
+      "reveal": "Get better understanding of the game, if you are Man united Fan in 2026"
+    },
+    {
+      "question": "Best Place I have seen through my eyes",
+      "options": [
+        "Gosainkunda",
+        "Amayangri",
+        "Dukpu kunda",
+        "Sailung",
+        "Taj Mahal",
+        "phewa taal"
+      ],
+      "answer": 2,
+      "reveal": "Frozen dukpu kunda was something else"
+    },
+    {
+      "question": "What is something I keep saying I'll do but never actually do?",
+      "options": [
+        "Going to the gym consistently",
+        "finishing the books I buy",
+        "following my daily plans",
+        "learning a new skill",
+        "fixing my sleep schedule",
+        "being productive every day"
+      ],
+      "answer": 0,
+      "reveal": "all , but this one the most"
+    },
+    {
+      "question": "If I could spend an entire day doing absolutely anything without feeling guilty, what would I do?",
+      "options": [
+        "Reading books",
+        "watching movies and series",
+        "sleeping all day",
+        "exploring new places",
+        "playing video games",
+        "eating good food and doing absolutely nothing"
+      ],
+      "answer": 0,
+      "reveal": "hehe"
     }
   ],
   "location": "Kathmandu, Nepal",
