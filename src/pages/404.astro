@@ -1,11 +1,23 @@
 ---
 import Base from '../layouts/Base.astro';
+import profile from '../data/profile.json';
+
+const me = profile.short_name;
+const prompt = `${me.toLowerCase()}=#`;
 ---
 <Base title="Not found">
+  <!-- /partner has no page on purpose: it's a real 404 with a love-life twist. Runs before the content parses, so no flash. -->
+  <script is:inline>
+    if (/^\/partner\/?$/i.test(location.pathname)) {
+      document.documentElement.dataset.notfound = 'love';
+      document.title = '404: Partner not found | sujit.db';
+    }
+  </script>
+
   <div class="wrap">
-    <section class="page-head">
-      <pre class="term err"><span class="dim">sujit=#</span> SELECT * FROM <span id="rel">this_page</span>;
-ERROR:  relation "<span id="rel2">this_page</span>" does not exist
+    <section class="page-head nf-default">
+      <pre class="term err"><span class="dim">{prompt}</span> SELECT * FROM <span data-rel>this_page</span>;
+ERROR:  relation "<span data-rel>this_page</span>" does not exist
 <span class="dim">HINT:  Try one of: projects, experience, about, blog.</span></pre>
       <h1>This page doesn't exist</h1>
       <p class="lede">The link may be old, or there's a typo in the address.</p>
@@ -14,14 +26,64 @@ ERROR:  relation "<span id="rel2">this_page</span>" does not exist
         <a class="btn ghost hide-techie" href="/">Go home</a>
       </div>
     </section>
+
+    <section class="love nf-love">
+      <p class="code" aria-label="404">
+        <span>4</span>
+        <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>
+        <span>4</span>
+      </p>
+      <h1>Partner not found</h1>
+      <p class="lede">I searched every table, every index, even the logs. So far the only relationships in my life are foreign keys.</p>
+
+      <pre class="term"><span class="dim">{prompt}</span> SELECT * FROM partner;
+<span class="dim"> name | met_on | status
+------+--------+--------</span>
+(0 rows)
+
+<span class="dim">{prompt}</span> SELECT me.name, partner.name FROM me LEFT JOIN partner ON true;
+<span class="dim"> name  | name
+-------+------</span>
+ {me.padEnd(5)} | <span class="null">NULL</span>
+
+<span class="dim">-- troubleshooting
+-- checked the indexes ....... nothing
+-- ran VACUUM ................ still empty
+-- restarted the server ...... still single</span></pre>
+
+      <div class="actions">
+        <button type="button" class="btn love-btn" popovertarget="mail-menu">INSERT INTO partner</button>
+        <a class="btn ghost" href="/playground">Back to the code</a>
+      </div>
+      <p class="fine">Status 404. Not a bug, just a feature still in development.</p>
+    </section>
   </div>
 </Base>
+
 <script>
   const name = location.pathname.replace(/^\/|\/$/g, '').replace(/\W+/g, '_') || 'this_page';
-  ['rel', 'rel2'].forEach((id) => (document.getElementById(id)!.textContent = name));
+  document.querySelectorAll('[data-rel]').forEach((el) => (el.textContent = name));
+  // The 404 page is built at /404, so mark the nav link for the address the visitor actually typed.
+  document.querySelector(`nav a[href="${location.pathname.replace(/\/$/, '')}"]`)?.classList.add('active');
 </script>
+
 <style>
+  :global(html[data-notfound='love']) .nf-default,
+  :global(html:not([data-notfound='love'])) .nf-love { display: none; }
+
   .err { margin-bottom: 32px; max-width: 640px; }
   .dim { color: var(--term-dim); }
   .actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+
+  .love { padding: 56px 0 24px; display: grid; justify-items: center; text-align: center; }
+  .love .lede { margin-inline: auto; }
+  .code { display: flex; align-items: center; gap: 0.08em; font: 600 clamp(5rem, 16vw, 9rem)/1 var(--mono); color: var(--ink); margin-bottom: 16px; }
+  .heart { width: 0.82em; height: 0.82em; fill: var(--love); animation: beat 1.4s ease-in-out infinite; }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(0.98); } 45% { transform: scale(1.06); } }
+  .love .term { text-align: left; margin-top: 32px; width: min(100%, 640px); }
+  .null { color: var(--love); font-style: italic; }
+  .love .actions { justify-content: center; margin-top: 28px; }
+  .love-btn { background: var(--love); border-color: var(--love); color: var(--on-love); font-family: var(--mono); }
+  .love-btn:hover { background: var(--love-hover); border-color: var(--love-hover); }
+  .fine { margin-top: 18px; font: 0.8rem var(--mono); color: var(--slate); }
 </style>

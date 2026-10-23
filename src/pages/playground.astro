@@ -23,6 +23,8 @@ const tables: Record<string, { page: string; cols: string[]; rows: (string | num
     rows: profile.certifications.map((c) => [c.title, c.issuer, c.year]) },
   hobbies: { page: '/about', cols: ['title', 'tag', 'text'],
     rows: profile.hobbies.map((h) => [h.title, h.tag, h.text]) },
+  // Empty on purpose. /partner is a real 404.
+  partner: { page: '/partner', cols: ['name', 'met_on', 'status'], rows: [] },
   blog: { page: '/blog', cols: ['slug', 'title', 'published', 'tags'],
     rows: posts.map((p) => [p.id, p.data.title, iso(p.data.date), p.data.tags.join(', ')]) },
 };
