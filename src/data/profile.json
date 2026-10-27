@@ -162,7 +162,7 @@
         "Both, depending on the bug",
         "Neither"
       ],
-      "answer": 2,
+      "answer": 1,
       "reveal": "Tea and always tea"
     },
     {
@@ -240,7 +240,7 @@
         "Switzerland",
         "The hills back home"
       ],
-      "answer": 3,
+      "answer": 2,
       "reveal": "TBH, anywhere new sound good"
     },
     {
@@ -273,7 +273,7 @@
         "Formula 1",
         "None"
       ],
-      "answer": 0,
+      "answer": 1,
       "reveal": "YNWA"
     },
     {
@@ -318,7 +318,7 @@
         "Family time",
         "Do-nothing"
       ],
-      "answer": 5,
+      "answer": 4,
       "reveal": "I guess i am matt le blanc"
     },
     {
@@ -399,7 +399,7 @@
         "Valorant",
         "LOL"
       ],
-      "answer": 0,
+      "answer": 3,
       "reveal": "Go on"
     },
     {
@@ -462,7 +462,7 @@
         "playing video games",
         "eating good food and doing absolutely nothing"
       ],
-      "answer": 0,
+      "answer": 5,
       "reveal": "hehe"
     }
   ],
